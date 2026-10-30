@@ -22,7 +22,7 @@ const publishedEvent = {
   title: 'Taller Laravel',
   description: 'Introducción a Laravel.',
   image_url: 'http://localhost:8000/storage/events/laravel.webp',
-  starts_at: '2026-08-20T15:00:00.000000Z',
+  starts_at: '2099-08-20T15:00:00.000000Z',
   capacity: 30,
   available_capacity: 29,
   category: { id: 3, code: 'hackathon', name: 'Hackathon' },
@@ -105,6 +105,26 @@ describe('public event detail', () => {
     expect(
       await screen.findByRole('link', { name: 'Inicia sesión para inscribirte' }),
     ).toHaveAttribute('href', expect.stringContaining(appRoutes.login))
+  })
+
+  it('marks events that already started as finished instead of offering registration', async () => {
+    server.use(
+      http.get(`${apiUrl}/events/7`, () =>
+        HttpResponse.json({
+          data: { ...publishedEvent, starts_at: '2020-08-20T15:00:00.000000Z' },
+        }),
+      ),
+    )
+
+    renderEventDetail(7)
+
+    expect(await screen.findByText('Evento finalizado')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Inicia sesión para inscribirte' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Inscribirme' }),
+    ).not.toBeInTheDocument()
   })
 
   it('prompts anonymous users to sign in before joining the organizing community', async () => {

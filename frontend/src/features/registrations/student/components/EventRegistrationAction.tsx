@@ -6,6 +6,7 @@ import { appRoutes } from '@/app/routes'
 import { useAuth } from '@/features/auth/auth-context'
 import { buildAuthPath } from '@/features/auth/model/auth-helpers'
 import type { Event } from '@/features/events/model/event.schemas'
+import { hasEventStarted } from '@/features/events/model/event-formatters'
 import {
   useCancelRegistration,
   useMyRegistrations,
@@ -44,6 +45,17 @@ export function EventRegistrationAction({
         <AlertTitle>Evento cancelado</AlertTitle>
         <AlertDescription>
           Este evento ya no acepta inscripciones.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
+  if (hasEventStarted(event)) {
+    return (
+      <Alert>
+        <AlertTitle>Evento finalizado</AlertTitle>
+        <AlertDescription>
+          Este evento ya comenzó y no acepta inscripciones.
         </AlertDescription>
       </Alert>
     )

@@ -15,6 +15,17 @@ export function formatEventDate(value: string | null): string {
     : eventDateFormatter.format(date)
 }
 
+export function hasEventStarted(
+  event: Pick<Event, 'starts_at'>,
+  now: Date = new Date(),
+): boolean {
+  if (!event.starts_at) return false
+
+  const startsAt = new Date(event.starts_at)
+
+  return !Number.isNaN(startsAt.getTime()) && startsAt <= now
+}
+
 export function formatEventCapacity(
   event: Pick<Event, 'capacity' | 'available_capacity'>,
 ): string {
