@@ -60,7 +60,7 @@ export function UiPreviewPage() {
         <header className="max-w-3xl space-y-4">
           <Badge variant="secondary">PoliLink design system</Badge>
           <h1 className="font-heading text-4xl leading-[1.05] font-semibold tracking-[-0.04em] sm:text-6xl">
-            Warm, clear, and ready for ESPOL communities.
+            Clear, focused, and ready for ESPOL communities.
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
             A visual checkpoint for the shared primitives before we compose
@@ -99,8 +99,8 @@ export function UiPreviewPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-lg border border-border bg-background p-4">
-                <p className="font-medium">Cream surface</p>
-                <p className="text-sm text-muted-foreground">#f7f4ed foundation</p>
+                <p className="font-medium">Neutral surface</p>
+                <p className="text-sm text-muted-foreground">#f4f7fb / #1c232b by theme</p>
               </div>
               <div className="rounded-lg border border-border bg-muted p-4">
                 <p className="font-medium">Subtle tint</p>
