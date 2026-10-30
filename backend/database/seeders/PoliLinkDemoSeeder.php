@@ -108,7 +108,7 @@ class PoliLinkDemoSeeder extends Seeder
                 'location_id' => Location::query()->where('name', 'Campus Gustavo Galindo')->sole()->id,
                 'status' => EventStatus::Published->value,
                 'description' => 'Hackathon de demostración para el avance de PoliLink.',
-                'starts_at' => now()->addMonth()->setTime(9, 0),
+                'starts_at' => now('America/Guayaquil')->addMonth()->setTime(9, 0)->utc(),
                 'capacity' => 50,
             ],
         );

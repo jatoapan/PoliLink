@@ -42,6 +42,8 @@ class DomainModelTest extends TestCase
         $this->assertSame('Presencial', $event->modality->name);
         $this->assertSame('Campus Gustavo Galindo', $event->location->name);
         $this->assertSame('published', $event->status->value);
+        $this->assertTrue($event->starts_at->isFuture());
+        $this->assertSame('09:00', $event->starts_at->copy()->setTimezone('America/Guayaquil')->format('H:i'));
         $this->assertSame('Publicado', $event->status->label());
         $this->assertTrue($registration->user->is($student));
         $this->assertTrue($registration->event->is($event));
