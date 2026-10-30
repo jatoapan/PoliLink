@@ -72,6 +72,29 @@ class Event extends Model
         $query->where('starts_at', '>', now());
     }
 
+    public function scopePubliclyListed(Builder $query): void
+    {
+        $query->where('status', EventStatus::Published->value)
+            ->upcoming()
+            ->whereHas('community', fn (Builder $query) => $query->where('is_active', true));
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     */
+    public function scopeInCategories(Builder $query, array $codes): void
+    {
+        $query->whereHas('category', fn (Builder $query) => $query->whereIn('code', $codes));
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     */
+    public function scopeInModalities(Builder $query, array $codes): void
+    {
+        $query->whereHas('modality', fn (Builder $query) => $query->whereIn('code', $codes));
+    }
+
     public function getAvailableCapacityAttribute(): int
     {
         $activeRegistrationsCount = array_key_exists('active_registrations_count', $this->attributes)

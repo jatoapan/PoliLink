@@ -31,9 +31,7 @@ class EventController extends Controller
         $perPage = $filters['per_page'] ?? 12;
 
         $events = Event::query()
-            ->where('status', EventStatus::Published->value)
-            ->upcoming()
-            ->whereHas('community', fn ($query) => $query->where('is_active', true))
+            ->publiclyListed()
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
@@ -41,14 +39,8 @@ class EventController extends Controller
                 });
             })
             ->when($filters['date'] ?? null, fn ($query, string $date) => $query->whereDate('starts_at', $date))
-            ->when($filters['category'] ?? null, fn ($query, string $category) => $query->whereHas(
-                'category',
-                fn ($query) => $query->where('code', $category),
-            ))
-            ->when($filters['modality'] ?? null, fn ($query, string $modality) => $query->whereHas(
-                'modality',
-                fn ($query) => $query->where('code', $modality),
-            ))
+            ->when($filters['category'] ?? null, fn ($query, string $category) => $query->inCategories([$category]))
+            ->when($filters['modality'] ?? null, fn ($query, string $modality) => $query->inModalities([$modality]))
             ->when($filters['community_id'] ?? null, fn ($query, int $communityId) => $query->whereHas(
                 'community',
                 fn ($query) => $query->whereKey($communityId)->where('is_active', true),
