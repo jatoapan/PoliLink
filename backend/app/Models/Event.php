@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'community_id',
@@ -28,6 +29,10 @@ class Event extends Model
     use HasFactory;
 
     public const MAX_SEARCH_KEYWORDS = 8;
+
+    public const LOCAL_TIMEZONE = 'America/Guayaquil';
+
+    public const WEEKDAY_SEARCH_WINDOW_DAYS = 60;
 
     protected function casts(): array
     {
@@ -125,6 +130,39 @@ class Event extends Model
                     ->orWhereHas('community', fn (Builder $query) => $query
                         ->whereRaw($query->qualifyColumn('name')." like ? escape '!'", [$pattern])
                         ->orWhereRaw($query->qualifyColumn('description')." like ? escape '!'", [$pattern]));
+            }
+        });
+    }
+
+    /**
+     * Matches events that start on any of the ISO weekdays (1 = Monday, 7 = Sunday)
+     * in Guayaquil time, from the start of today through the next 59 days.
+     * Values that are not integers between 1 and 7 are ignored.
+     *
+     * @param  array<int, mixed>  $weekdays
+     */
+    public function scopeOnWeekdays(Builder $query, array $weekdays): void
+    {
+        $weekdays = collect($weekdays)
+            ->filter(fn (mixed $weekday) => is_int($weekday) && $weekday >= 1 && $weekday <= 7)
+            ->unique();
+
+        if ($weekdays->isEmpty()) {
+            return;
+        }
+
+        $today = now(self::LOCAL_TIMEZONE)->startOfDay();
+        $ranges = collect(range(0, self::WEEKDAY_SEARCH_WINDOW_DAYS - 1))
+            ->map(fn (int $offset) => $today->copy()->addDays($offset))
+            ->filter(fn (Carbon $day) => $weekdays->contains($day->dayOfWeekIso))
+            ->map(fn (Carbon $day) => [$day->copy()->utc(), $day->copy()->addDay()->utc()]);
+        $column = $query->qualifyColumn('starts_at');
+
+        $query->where(function (Builder $query) use ($ranges, $column) {
+            foreach ($ranges as [$start, $end]) {
+                $query->orWhere(fn (Builder $query) => $query
+                    ->where($column, '>=', $start)
+                    ->where($column, '<', $end));
             }
         });
     }

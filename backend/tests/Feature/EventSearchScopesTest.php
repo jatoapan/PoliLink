@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventCategory;
 use App\Models\EventModality;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class EventSearchScopesTest extends TestCase
@@ -123,6 +124,118 @@ class EventSearchScopesTest extends TestCase
             [$listed->id],
             Event::query()->publiclyListed()->matchingKeywords(['python'])->pluck('id')->all(),
         );
+    }
+
+    public function test_weekday_scope_uses_guayaquil_time_boundaries(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-04 12:00', Event::LOCAL_TIMEZONE));
+
+        $fridayStart = $this->eventAt('2026-11-06 00:00:00');
+        $fridayNightUtcSaturday = $this->eventAt('2026-11-06 21:00:00');
+        $fridayLastSecond = $this->eventAt('2026-11-06 23:59:59');
+        $thursdayLastSecond = $this->eventAt('2026-11-05 23:59:59');
+        $saturdayStart = $this->eventAt('2026-11-07 00:00:00');
+
+        $this->assertSame('2026-11-07 02:00:00', $fridayNightUtcSaturday->starts_at->utc()->format('Y-m-d H:i:s'));
+        $this->assertEqualsCanonicalizing(
+            [$fridayStart->id, $fridayNightUtcSaturday->id, $fridayLastSecond->id],
+            Event::query()->onWeekdays([5])->pluck('id')->all(),
+        );
+        $this->assertSame([$saturdayStart->id], Event::query()->onWeekdays([6])->pluck('id')->all());
+        $this->assertSame([$thursdayLastSecond->id], Event::query()->onWeekdays([4])->pluck('id')->all());
+    }
+
+    public function test_weekday_scope_matches_any_of_the_given_weekdays(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-04 12:00', Event::LOCAL_TIMEZONE));
+
+        $monday = $this->eventAt('2026-11-09 10:00:00');
+        $friday = $this->eventAt('2026-11-13 16:00:00');
+        $this->eventAt('2026-11-11 16:00:00');
+
+        $this->assertEqualsCanonicalizing(
+            [$monday->id, $friday->id],
+            Event::query()->onWeekdays([1, 5, 5])->pluck('id')->all(),
+        );
+        $this->assertSame([$friday->id], Event::query()->onWeekdays([5, 0, 8, '3', null])->pluck('id')->all());
+        $this->assertSame(3, Event::query()->onWeekdays([0, 8, '5'])->count());
+        $this->assertSame(3, Event::query()->onWeekdays([])->count());
+    }
+
+    public function test_weekday_scope_only_covers_the_next_sixty_days(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-04 12:00', Event::LOCAL_TIMEZONE));
+
+        $lastSundayInWindow = $this->eventAt('2026-12-27 10:00:00');
+        $lastDayInWindow = $this->eventAt('2027-01-02 23:00:00');
+        $this->eventAt('2027-01-03 00:00:00');
+        $this->eventAt('2027-01-09 10:00:00');
+        $this->eventAt('2026-10-31 10:00:00');
+
+        $this->assertSame([$lastDayInWindow->id], Event::query()->onWeekdays([6])->pluck('id')->all());
+        $this->assertSame([$lastSundayInWindow->id], Event::query()->onWeekdays([7])->pluck('id')->all());
+    }
+
+    public function test_weekday_scope_includes_today_and_catalog_visibility_drops_past_events(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-04 12:00', Event::LOCAL_TIMEZONE));
+
+        $laterToday = $this->eventAt('2026-11-04 18:00:00');
+        $earlierToday = $this->eventAt('2026-11-04 08:00:00');
+        $this->eventAt('2026-11-11 18:00:00', ['status' => EventStatus::Cancelled->value]);
+        $nextWednesday = $this->eventAt('2026-11-11 19:00:00');
+
+        $this->assertEqualsCanonicalizing(
+            [$laterToday->id, $earlierToday->id, $nextWednesday->id],
+            Event::query()->where('status', EventStatus::Published->value)->onWeekdays([3])->pluck('id')->all(),
+        );
+        $this->assertEqualsCanonicalizing(
+            [$laterToday->id, $nextWednesday->id],
+            Event::query()->publiclyListed()->onWeekdays([3])->pluck('id')->all(),
+        );
+    }
+
+    public function test_search_scopes_combine_keywords_weekdays_and_modality(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-04 12:00', Event::LOCAL_TIMEZONE));
+        $inPerson = EventModality::factory()->create(['code' => 'in_person']);
+        $virtual = EventModality::factory()->create(['code' => 'virtual']);
+
+        $match = $this->eventAt('2026-11-06 16:00:00', [
+            'title' => 'Taller de inteligencia artificial',
+            'event_modality_id' => $inPerson->id,
+        ]);
+        $this->eventAt('2026-11-06 19:00:00', [
+            'title' => 'Webinar de inteligencia artificial',
+            'event_modality_id' => $virtual->id,
+        ]);
+        $this->eventAt('2026-11-07 09:00:00', [
+            'title' => 'Hackatón de inteligencia artificial',
+            'event_modality_id' => $inPerson->id,
+        ]);
+        $this->eventAt('2026-11-06 19:00:00', [
+            'title' => 'Muestra de teatro',
+            'event_modality_id' => $inPerson->id,
+        ]);
+
+        $this->assertSame(
+            [$match->id],
+            Event::query()
+                ->publiclyListed()
+                ->matchingKeywords(['inteligencia artificial', 'programar'])
+                ->inModalities(['in_person'])
+                ->onWeekdays([5])
+                ->pluck('id')
+                ->all(),
+        );
+    }
+
+    private function eventAt(string $localDateTime, array $attributes = []): Event
+    {
+        return $this->event([
+            'starts_at' => Carbon::parse($localDateTime, Event::LOCAL_TIMEZONE)->utc(),
+            ...$attributes,
+        ]);
     }
 
     private function event(array $attributes = []): Event
