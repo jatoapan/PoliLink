@@ -19,8 +19,7 @@ class EventImageApiTest extends TestCase
 
     public function test_events_without_images_return_a_null_image_url(): void
     {
-        $this->seed();
-        $event = $this->seededEvent();
+        $event = Event::factory()->create(['image_path' => null]);
 
         $this->getJson("/api/events/{$event->id}")
             ->assertOk()
