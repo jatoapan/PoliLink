@@ -113,6 +113,8 @@ class PoliLinkDemoSeeder extends Seeder
             ],
         );
 
+        $this->seedEventImage($event, 'technology.webp');
+
         Registration::query()->updateOrCreate(
             [
                 'event_id' => $event->id,
@@ -141,5 +143,22 @@ class PoliLinkDemoSeeder extends Seeder
         $path = "communities/{$filename}";
         Storage::disk('public')->put($path, file_get_contents($source));
         $community->update(['image_path' => $path]);
+    }
+
+    private function seedEventImage(Event $event, string $filename): void
+    {
+        if ($event->image_path !== null) {
+            return;
+        }
+
+        $source = __DIR__."/assets/events/{$filename}";
+
+        if (! is_file($source)) {
+            return;
+        }
+
+        $path = "events/{$filename}";
+        Storage::disk('public')->put($path, file_get_contents($source));
+        $event->update(['image_path' => $path]);
     }
 }

@@ -17,6 +17,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -72,6 +73,7 @@ class HackathonDemoSeeder extends Seeder
             }
 
             $communities[$key] = $resolved;
+            $this->seedCommunityImage($resolved, $key);
         }
 
         $this->demoMembership($communities['ai'] ?? null, $students['ana'], $memberRoleId, $organizer);
@@ -104,12 +106,15 @@ class HackathonDemoSeeder extends Seeder
                     'capacity' => $event['capacity'],
                 ],
             );
+            $this->seedEventImage($events[$key], $event['community']);
         }
 
         $this->demoRegistration($events['ml_workshop'] ?? null, $students['ana']);
         $this->demoRegistration($events['ml_workshop'] ?? null, $students['luis']);
         $this->demoRegistration($events['coding_night'] ?? null, $students['sofia']);
         $this->demoRegistration($events['ai_intro'] ?? null, $students['luis']);
+
+        $this->call(DemoImageSeeder::class);
     }
 
     private function demoUser(string $email, string $firstName, string $lastName): User
@@ -202,6 +207,50 @@ class HackathonDemoSeeder extends Seeder
                 'cancelled_at' => null,
             ],
         );
+    }
+
+    private function seedCommunityImage(Community $community, string $key): void
+    {
+        if ($community->image_path !== null) {
+            return;
+        }
+
+        $filename = str_replace('_', '-', $key).'.webp';
+        $source = __DIR__."/assets/communities/{$filename}";
+
+        if (! is_file($source)) {
+            return;
+        }
+
+        $path = "communities/{$filename}";
+        Storage::disk('public')->put($path, file_get_contents($source));
+        $community->update(['image_path' => $path]);
+    }
+
+    private function seedEventImage(Event $event, string $communityKey): void
+    {
+        if ($event->image_path !== null) {
+            return;
+        }
+
+        $filename = match ($communityKey) {
+            'security' => 'cybersecurity.webp',
+            'startups', 'i3lab' => 'entrepreneurship.webp',
+            'theatre', 'choir', 'folk_ballet' => 'culture.webp',
+            'sports' => 'sports.webp',
+            'sustainability' => 'sustainability.webp',
+            'robota', 'airos' => 'robotics.webp',
+            default => 'technology.webp',
+        };
+        $source = __DIR__."/assets/events/{$filename}";
+
+        if (! is_file($source)) {
+            return;
+        }
+
+        $path = "events/{$filename}";
+        Storage::disk('public')->put($path, file_get_contents($source));
+        $event->update(['image_path' => $path]);
     }
 
     /**
