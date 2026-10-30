@@ -17,7 +17,6 @@ use App\Models\Location;
 use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -109,7 +108,7 @@ class PoliLinkDemoSeeder extends Seeder
                 'location_id' => Location::query()->where('name', 'Campus Gustavo Galindo')->sole()->id,
                 'status' => EventStatus::Published->value,
                 'description' => 'Hackathon de demostración para el avance de PoliLink.',
-                'starts_at' => Carbon::create(2026, 8, 20, 9),
+                'starts_at' => now()->addMonth()->setTime(9, 0),
                 'capacity' => 50,
             ],
         );

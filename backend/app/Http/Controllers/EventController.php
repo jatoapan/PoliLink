@@ -32,6 +32,7 @@ class EventController extends Controller
 
         $events = Event::query()
             ->where('status', EventStatus::Published->value)
+            ->upcoming()
             ->whereHas('community', fn ($query) => $query->where('is_active', true))
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($query) use ($search) {

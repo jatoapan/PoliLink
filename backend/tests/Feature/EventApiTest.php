@@ -29,7 +29,7 @@ class EventApiTest extends TestCase
             'title' => 'Evento cancelado',
         ]);
 
-        $response = $this->getJson('/api/events?search=Hackathon&date=2026-08-20&category=hackathon&modality=in_person&community_id='.$event->community_id);
+        $response = $this->getJson('/api/events?search=Hackathon&date='.$event->starts_at->format('Y-m-d').'&category=hackathon&modality=in_person&community_id='.$event->community_id);
 
         $response
             ->assertOk()
@@ -40,6 +40,29 @@ class EventApiTest extends TestCase
             ->assertJsonPath('data.0.community.slug', 'taws')
             ->assertJsonPath('data.0.category.code', 'hackathon')
             ->assertJsonPath('meta.per_page', 12);
+    }
+
+    public function test_catalogue_excludes_events_that_already_started(): void
+    {
+        $this->seed();
+        $event = $this->seededEvent();
+        $pastEvent = Event::factory()->create([
+            'community_id' => $event->community_id,
+            'event_category_id' => $event->event_category_id,
+            'event_modality_id' => $event->event_modality_id,
+            'location_id' => $event->location_id,
+            'title' => 'Evento pasado',
+            'starts_at' => now()->subDay(),
+        ]);
+
+        $this->getJson('/api/events')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $event->id);
+
+        $this->getJson("/api/events/{$pastEvent->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $pastEvent->id);
     }
 
     public function test_public_detail_hides_cancelled_events(): void
