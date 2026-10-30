@@ -46,7 +46,8 @@ class DiscoveryKeywords
         'otras', 'otro', 'otros', 'para', 'pero', 'por', 'prefiero', 'puedo', 'que', 'quiero', 'quisiera', 'se',
         'sea', 'sean', 'ser', 'sin', 'sobre', 'solo', 'son', 'su', 'sus', 'tambien', 'tengo', 'todo', 'todos',
         'tu', 'tus', 'un', 'una', 'unas', 'unos', 'ver', 'y', 'yo', 'cual', 'cuales', 'quien', 'nuestro',
-        'nuestra', 'nuestros', 'nuestras',
+        'nuestra', 'nuestros', 'nuestras', 'mejorar', 'mejor', 'entender', 'saber', 'tocar', 'salir', 'poder',
+        'nuevo', 'nueva', 'nuevos', 'nuevas', 'quizas', 'tal', 'vez',
     ];
 
     /** Spanish inflection endings, longest first, removed from single words of seven or more letters. */

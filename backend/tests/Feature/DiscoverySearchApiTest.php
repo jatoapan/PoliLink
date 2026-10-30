@@ -356,6 +356,18 @@ class DiscoverySearchApiTest extends TestCase
             ->assertJsonPath('data.events.*.id', [$saturday->id]);
     }
 
+    public function test_rule_based_fallback_drops_generic_verbs(): void
+    {
+        EventCategory::factory()->create(['code' => 'sports', 'name' => 'Deportes']);
+        $this->fakeGemma([new GemmaException(GemmaFailure::Timeout)]);
+
+        $this->search('quiero mejorar mi salud mental con deporte y tal vez salir a conocer algo nuevo')
+            ->assertOk()
+            ->assertJsonPath('data.mode', 'fallback')
+            ->assertJsonPath('data.interpretation.keywords', ['salud', 'mental'])
+            ->assertJsonPath('data.interpretation.categories.0.code', 'sports');
+    }
+
     public function test_short_acronyms_are_expanded_and_generic_or_unsafe_keywords_are_dropped(): void
     {
         $ai = $this->event('Introducción a la inteligencia artificial', '2026-11-06 16:00');
