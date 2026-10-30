@@ -3,6 +3,7 @@ export const appRoutes = {
   login: '/iniciar-sesion',
   register: '/registrarse',
   events: '/eventos',
+  discover: '/descubrir',
   eventDetail: (eventId: number | string) => `/eventos/${eventId}`,
   communities: '/comunidades',
   communityDetail: (slug: string) => `/comunidades/${slug}`,

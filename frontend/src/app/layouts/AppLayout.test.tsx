@@ -41,6 +41,21 @@ describe('application layout community navigation', () => {
     ).toHaveAttribute('href', appRoutes.communities)
   })
 
+  it('shows the discovery link to every visitor', () => {
+    mockedUseAuth.mockReturnValue(defaultAuthValue)
+
+    render(
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('link', { name: 'Descubrir' })).toHaveAttribute(
+      'href',
+      appRoutes.discover,
+    )
+  })
+
   it('shows the managed communities link to organizers', () => {
     mockedUseAuth.mockReturnValue({
       ...defaultAuthValue,

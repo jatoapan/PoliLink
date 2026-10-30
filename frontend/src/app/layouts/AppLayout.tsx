@@ -45,6 +45,7 @@ function getNavigationItems(
   const items: NavigationItem[] = isOrganizer
     ? [
         { label: 'Eventos', to: appRoutes.events },
+        { label: 'Descubrir', to: appRoutes.discover },
         { label: 'Comunidades', to: appRoutes.communities },
         { label: 'Mis comunidades', to: appRoutes.myCommunities },
         { label: 'Mis eventos', to: appRoutes.myEvents },
@@ -52,6 +53,7 @@ function getNavigationItems(
       ]
     : [
         { label: 'Eventos', to: appRoutes.events },
+        { label: 'Descubrir', to: appRoutes.discover },
         { label: 'Comunidades', to: appRoutes.communities },
       ]
 

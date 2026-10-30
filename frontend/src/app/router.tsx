@@ -21,6 +21,7 @@ import { CommunityCreationRequestsPage } from '@/features/communities/pages/Comm
 import { CommunityDetailPage } from '@/features/communities/pages/CommunityDetailPage'
 import { CommunityDirectoryPage } from '@/features/communities/pages/CommunityDirectoryPage'
 import { CommunityMembersPage } from '@/features/communities/pages/CommunityMembersPage'
+import { DiscoveryPage } from '@/features/discovery/pages/DiscoveryPage'
 import { EventCatalogPage } from '@/features/events/catalog/pages/EventCatalogPage'
 import { EventDetailPage } from '@/features/events/detail/pages/EventDetailPage'
 import { LandingPage } from '@/features/events/landing/pages/LandingPage'
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <LandingPage /> },
       { path: appRoutes.events.slice(1), element: <EventCatalogPage /> },
+      { path: appRoutes.discover.slice(1), element: <DiscoveryPage /> },
       {
         path: appRoutePatterns.eventDetail,
         element: <EventDetailPage />,
