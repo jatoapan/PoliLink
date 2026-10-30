@@ -7,6 +7,7 @@ use App\Http\Controllers\CommunityDirectoryController;
 use App\Http\Controllers\CommunityImageController;
 use App\Http\Controllers\CommunityMembershipController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\RegistrationController;
@@ -76,6 +77,7 @@ Route::middleware(['auth:sanctum', 'admin'])
         Route::patch('/{communityCreationRequest}/reject', [CommunityCreationRequestController::class, 'reject']);
     });
 
+Route::post('/discovery/search', [DiscoveryController::class, 'search'])->middleware('throttle:ai-search');
 Route::get('/events', [EventController::class, 'index']);
 Route::get('/events/{event}', [EventController::class, 'show']);
 Route::get('/event-categories', [ReferenceDataController::class, 'categories']);

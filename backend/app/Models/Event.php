@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 #[Fillable([
     'community_id',
@@ -110,14 +111,7 @@ class Event extends Model
      */
     public function scopeMatchingKeywords(Builder $query, array $keywords): void
     {
-        $patterns = collect($keywords)
-            ->filter(fn (mixed $keyword) => is_string($keyword))
-            ->map(fn (string $keyword) => trim($keyword))
-            ->filter(fn (string $keyword) => $keyword !== '')
-            ->unique()
-            ->take(self::MAX_SEARCH_KEYWORDS)
-            ->map(fn (string $keyword) => '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $keyword).'%')
-            ->values();
+        $patterns = self::keywordLikePatterns($keywords);
 
         if ($patterns->isEmpty()) {
             return;
@@ -132,6 +126,37 @@ class Event extends Model
                         ->orWhereRaw($query->qualifyColumn('description')." like ? escape '!'", [$pattern]));
             }
         });
+    }
+
+    /**
+     * Builds `like ? escape '!'` patterns for up to MAX_SEARCH_KEYWORDS distinct,
+     * non-blank string keywords, escaping `%`, `_` and `!`.
+     *
+     * @param  array<int, mixed>  $keywords
+     * @return Collection<int, string>
+     */
+    public static function keywordLikePatterns(array $keywords): Collection
+    {
+        return collect($keywords)
+            ->filter(fn (mixed $keyword) => is_string($keyword))
+            ->map(fn (string $keyword) => trim($keyword))
+            ->filter(fn (string $keyword) => $keyword !== '')
+            ->unique()
+            ->take(self::MAX_SEARCH_KEYWORDS)
+            ->map(fn (string $keyword) => '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $keyword).'%')
+            ->values();
+    }
+
+    /**
+     * Matches events that still have at least one seat without an active registration.
+     */
+    public function scopeWithAvailableSeats(Builder $query): void
+    {
+        $query->where($query->qualifyColumn('capacity'), '>', fn ($subquery) => $subquery
+            ->selectRaw('count(*)')
+            ->from('registrations')
+            ->whereColumn('registrations.event_id', $query->qualifyColumn('id'))
+            ->where('registrations.status', RegistrationStatus::Active->value));
     }
 
     /**
