@@ -19,6 +19,7 @@ class DiscoveryResultResource extends JsonResource
 
         return [
             'mode' => $interpretation->mode,
+            'scope' => $result->scope->value,
             'fallback_reason' => $interpretation->fallbackReason?->value,
             'interpretation' => [
                 'intent' => $interpretation->intent,

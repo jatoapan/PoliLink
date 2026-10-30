@@ -18,6 +18,6 @@ class DiscoveryController extends Controller
     {
         $interpretation = $this->interpreter->interpret($request->validated('query'));
 
-        return new DiscoveryResultResource($this->discovery->search($interpretation));
+        return new DiscoveryResultResource($this->discovery->search($interpretation, $request->discoveryScope()));
     }
 }

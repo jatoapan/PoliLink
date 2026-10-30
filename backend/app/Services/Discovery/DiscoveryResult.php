@@ -15,6 +15,7 @@ final readonly class DiscoveryResult
      */
     public function __construct(
         public DiscoveryInterpretation $interpretation,
+        public DiscoveryScope $scope,
         public array $events,
         public array $communities,
         public array $categoryNames,

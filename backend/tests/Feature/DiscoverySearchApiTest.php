@@ -431,6 +431,66 @@ class DiscoverySearchApiTest extends TestCase
             ->assertJsonPath('data.communities.0.reasons', ['Tiene 2 eventos próximos publicados.']);
     }
 
+    public function test_search_defaults_to_events_and_communities(): void
+    {
+        $event = $this->event('Taller de inteligencia artificial', '2026-11-06 16:00');
+        $this->fakeGemma([$this->gemmaAnswer()]);
+
+        $this->search(self::DEMO_QUERY)
+            ->assertOk()
+            ->assertJsonPath('data.scope', 'all')
+            ->assertJsonPath('data.events.*.id', [$event->id])
+            ->assertJsonPath('data.communities.*.id', [$this->aiClub->id]);
+    }
+
+    public function test_event_scope_returns_only_events(): void
+    {
+        $event = $this->event('Taller de inteligencia artificial', '2026-11-06 16:00');
+        $this->fakeGemma([$this->gemmaAnswer()]);
+
+        $this->postJson('/api/discovery/search', ['query' => self::DEMO_QUERY, 'scope' => 'events'])
+            ->assertOk()
+            ->assertJsonPath('data.scope', 'events')
+            ->assertJsonPath('data.events.*.id', [$event->id])
+            ->assertJsonPath('data.communities', []);
+    }
+
+    public function test_community_scope_returns_only_communities(): void
+    {
+        $this->event('Taller de inteligencia artificial', '2026-11-06 16:00');
+        $this->fakeGemma([$this->gemmaAnswer()]);
+
+        $this->postJson('/api/discovery/search', ['query' => self::DEMO_QUERY, 'scope' => 'communities'])
+            ->assertOk()
+            ->assertJsonPath('data.scope', 'communities')
+            ->assertJsonPath('data.events', [])
+            ->assertJsonPath('data.communities.*.id', [$this->aiClub->id]);
+    }
+
+    public function test_community_scope_suggests_active_communities_when_there_are_no_topics(): void
+    {
+        $this->event('Taller de bienvenida', '2026-11-05 10:00', ['community_id' => $this->webCommunity->id]);
+        $this->fakeGemma([['intent' => 'events', 'keywords' => [], 'categories' => [], 'modalities' => [], 'weekdays' => []]]);
+
+        $this->postJson('/api/discovery/search', ['query' => 'algo para este viernes', 'scope' => 'communities'])
+            ->assertOk()
+            ->assertJsonPath('data.events', [])
+            ->assertJsonPath('data.communities.0.id', $this->webCommunity->id);
+    }
+
+    public function test_scope_is_validated(): void
+    {
+        $fake = $this->fakeGemma([]);
+
+        foreach (['everything', 7, ['events']] as $scope) {
+            $this->postJson('/api/discovery/search', ['query' => self::DEMO_QUERY, 'scope' => $scope])
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors(['scope' => 'El alcance de la búsqueda no es válido.']);
+        }
+
+        $this->assertSame([], $fake->calls);
+    }
+
     public function test_empty_filters_list_upcoming_events_without_inventing_matches(): void
     {
         $first = $this->event('Taller de cerámica', '2026-11-05 10:00');

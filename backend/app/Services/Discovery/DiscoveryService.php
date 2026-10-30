@@ -29,14 +29,15 @@ class DiscoveryService
         private readonly DiscoveryKeywords $keywords,
     ) {}
 
-    public function search(DiscoveryInterpretation $interpretation): DiscoveryResult
+    public function search(DiscoveryInterpretation $interpretation, DiscoveryScope $scope = DiscoveryScope::All): DiscoveryResult
     {
         $terms = $this->keywords->searchTerms($interpretation->keywords);
 
         return new DiscoveryResult(
             interpretation: $interpretation,
-            events: $this->events($interpretation, $terms),
-            communities: $this->communities($interpretation, $terms),
+            scope: $scope,
+            events: $scope->includesEvents() ? $this->events($interpretation, $terms) : [],
+            communities: $scope->includesCommunities() ? $this->communities($interpretation, $terms, $scope) : [],
             categoryNames: EventCategory::query()->whereIn('code', $interpretation->categories)->pluck('name', 'code')->all(),
             modalityNames: EventModality::query()->whereIn('code', $interpretation->modalities)->pluck('name', 'code')->all(),
         );
@@ -78,12 +79,12 @@ class DiscoveryService
      * @param  array<int, string>  $terms
      * @return array<int, array{community: Community, reasons: array<int, string>}>
      */
-    private function communities(DiscoveryInterpretation $interpretation, array $terms): array
+    private function communities(DiscoveryInterpretation $interpretation, array $terms, DiscoveryScope $scope): array
     {
         // Without topics there is nothing to match a community against, unless
-        // the student is looking for people to meet: then the most active
-        // communities are suggested.
-        if ($terms === [] && $interpretation->intent === DiscoveryInterpretation::INTENT_EVENTS) {
+        // the student is looking for people to meet or is browsing the
+        // community directory: then the most active communities are suggested.
+        if ($terms === [] && $scope === DiscoveryScope::All && $interpretation->intent === DiscoveryInterpretation::INTENT_EVENTS) {
             return [];
         }
 
