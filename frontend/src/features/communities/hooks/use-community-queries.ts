@@ -23,11 +23,13 @@ import { communityQueryKeys } from '@/features/communities/model/community-query
 
 export function usePublicCommunityDirectory(
   filters: CommunityDirectoryFilters = {},
+  options: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: communityQueryKeys.directory(filters),
     queryFn: () => publicCommunitiesApi.discover(filters),
     placeholderData: keepPreviousData,
+    enabled: options.enabled ?? true,
   })
 }
 

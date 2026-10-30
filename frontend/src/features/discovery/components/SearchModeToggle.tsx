@@ -6,11 +6,14 @@ import { Button } from '@/shared/ui/button'
 type SearchModeToggleProps = {
   mode: SearchMode
   onModeChange: (mode: SearchMode) => void
+  /** Label of the page's own search, such as "Búsqueda por nombre". */
+  classicLabel?: string
 }
 
 export function SearchModeToggle({
   mode,
   onModeChange,
+  classicLabel = 'Búsqueda con filtros',
 }: SearchModeToggleProps) {
   return (
     <fieldset className="inline-flex flex-wrap gap-2">
@@ -22,7 +25,7 @@ export function SearchModeToggle({
         variant={mode === 'classic' ? 'default' : 'outline'}
       >
         <ListFilter aria-hidden="true" />
-        Búsqueda con filtros
+        {classicLabel}
       </Button>
       <Button
         aria-pressed={mode === 'smart'}

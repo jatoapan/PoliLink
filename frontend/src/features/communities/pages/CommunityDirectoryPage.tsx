@@ -4,6 +4,14 @@ import { useSearchParams } from 'react-router'
 
 import { CommunityCard } from '@/features/communities/components/CommunityCard'
 import { usePublicCommunityDirectory } from '@/features/communities/hooks/use-community-queries'
+import { SearchModeToggle } from '@/features/discovery/components/SearchModeToggle'
+import { SmartSearch } from '@/features/discovery/components/SmartSearch'
+import {
+  readSearchMode,
+  readSmartQuery,
+  searchParamsForMode,
+  smartSearchParams,
+} from '@/features/discovery/model/search-mode'
 import { ApiErrorFeedback } from '@/shared/ui/api-error-feedback'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
@@ -21,9 +29,13 @@ export function CommunityDirectoryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('search') ?? ''
   const page = parsePage(searchParams.get('page'))
+  const searchMode = readSearchMode(searchParams)
   const [searchInput, setSearchInput] = useState(search)
 
-  const directoryQuery = usePublicCommunityDirectory({ search, page })
+  const directoryQuery = usePublicCommunityDirectory(
+    { search, page },
+    { enabled: searchMode === 'classic' },
+  )
 
   useEffect(() => {
     setSearchInput(search)
@@ -74,98 +86,119 @@ export function CommunityDirectoryPage() {
             </p>
           </div>
 
-          <div className="relative max-w-md">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              aria-label="Buscar comunidades"
-              className="pl-8"
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Buscar comunidades por nombre…"
-              value={searchInput}
-            />
-          </div>
+          <SearchModeToggle
+            classicLabel="Búsqueda por nombre"
+            mode={searchMode}
+            onModeChange={(mode) => setSearchParams(searchParamsForMode(mode))}
+          />
+
+          {searchMode === 'classic' && (
+            <div className="relative max-w-md">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                aria-label="Buscar comunidades"
+                className="pl-8"
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Buscar comunidades por nombre…"
+                value={searchInput}
+              />
+            </div>
+          )}
         </header>
 
-        {directoryQuery.isPending && (
-          <div
-            aria-label="Cargando comunidades"
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
-            role="status"
-          >
-            {Array.from({ length: 6 }, (_, index) => (
-              <Skeleton className="h-64 w-full rounded-xl" key={index} />
-            ))}
-          </div>
-        )}
-
-        {directoryQuery.isError && (
-          <ApiErrorFeedback
-            error={directoryQuery.error}
-            isRetrying={directoryQuery.isFetching}
-            onRetry={() => void directoryQuery.refetch()}
-            title="No pudimos cargar las comunidades"
+        {searchMode === 'smart' ? (
+          <SmartSearch
+            onQueryChange={(query) => setSearchParams(smartSearchParams(query))}
+            query={readSmartQuery(searchParams)}
+            scope="communities"
           />
-        )}
-
-        {directoryQuery.isSuccess &&
-          communityPage &&
-          communityPage.data.length === 0 && (
-            <section className="rounded-xl border border-dashed p-10 text-center">
-              <h2 className="font-heading text-xl font-medium">
-                No encontramos comunidades
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Prueba con otro término de búsqueda.
-              </p>
-            </section>
-          )}
-
-        {directoryQuery.isSuccess &&
-          communityPage &&
-          communityPage.data.length > 0 && (
-            <section aria-busy={directoryQuery.isFetching} className="space-y-6">
-              <p className="text-sm text-muted-foreground">
-                {communityPage.meta.total === 1
-                  ? '1 comunidad activa'
-                  : `${communityPage.meta.total} comunidades activas`}
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {communityPage.data.map((community) => (
-                  <CommunityCard community={community} key={community.id} />
+        ) : (
+          <>
+            {directoryQuery.isPending && (
+              <div
+                aria-label="Cargando comunidades"
+                className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                role="status"
+              >
+                {Array.from({ length: 6 }, (_, index) => (
+                  <Skeleton className="h-64 w-full rounded-xl" key={index} />
                 ))}
               </div>
+            )}
 
-              {lastPage > 1 && (
-                <nav
-                  aria-label="Paginación de comunidades"
-                  className="flex items-center justify-between gap-3"
-                >
-                  <Button
-                    disabled={page === 1}
-                    onClick={() => handlePageChange(page - 1)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Anterior
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Página {page} de {lastPage}
-                  </span>
-                  <Button
-                    disabled={page === lastPage}
-                    onClick={() => handlePageChange(page + 1)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Siguiente
-                  </Button>
-                </nav>
+            {directoryQuery.isError && (
+              <ApiErrorFeedback
+                error={directoryQuery.error}
+                isRetrying={directoryQuery.isFetching}
+                onRetry={() => void directoryQuery.refetch()}
+                title="No pudimos cargar las comunidades"
+              />
+            )}
+
+            {directoryQuery.isSuccess &&
+              communityPage &&
+              communityPage.data.length === 0 && (
+                <section className="rounded-xl border border-dashed p-10 text-center">
+                  <h2 className="font-heading text-xl font-medium">
+                    No encontramos comunidades
+                  </h2>
+                  <p className="mt-2 text-muted-foreground">
+                    Prueba con otro término de búsqueda.
+                  </p>
+                </section>
               )}
-            </section>
-          )}
+
+            {directoryQuery.isSuccess &&
+              communityPage &&
+              communityPage.data.length > 0 && (
+                <section
+                  aria-busy={directoryQuery.isFetching}
+                  className="space-y-6"
+                >
+                  <p className="text-sm text-muted-foreground">
+                    {communityPage.meta.total === 1
+                      ? '1 comunidad activa'
+                      : `${communityPage.meta.total} comunidades activas`}
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {communityPage.data.map((community) => (
+                      <CommunityCard community={community} key={community.id} />
+                    ))}
+                  </div>
+
+                  {lastPage > 1 && (
+                    <nav
+                      aria-label="Paginación de comunidades"
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <Button
+                        disabled={page === 1}
+                        onClick={() => handlePageChange(page - 1)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Anterior
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Página {page} de {lastPage}
+                      </span>
+                      <Button
+                        disabled={page === lastPage}
+                        onClick={() => handlePageChange(page + 1)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Siguiente
+                      </Button>
+                    </nav>
+                  )}
+                </section>
+              )}
+          </>
+        )}
       </div>
     </main>
   )
