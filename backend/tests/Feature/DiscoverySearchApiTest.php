@@ -390,6 +390,21 @@ class DiscoverySearchApiTest extends TestCase
         $this->assertContains($this->webCommunity->id, array_column($response->json('data.communities'), 'id'));
     }
 
+    public function test_reasons_list_words_that_differ_only_in_case_once(): void
+    {
+        $community = Community::factory()->create([
+            'name' => 'Club de Robótica',
+            'description' => 'Proyectos de robótica para estudiantes.',
+        ]);
+        $event = $this->event('Encuentro de bienvenida', '2026-11-06 16:00', ['community_id' => $community->id]);
+        $this->fakeGemma([$this->gemmaAnswer(keywords: ['robótica'])]);
+
+        $this->search('robótica los viernes presencial')
+            ->assertOk()
+            ->assertJsonPath('data.events.*.id', [$event->id])
+            ->assertJsonPath('data.events.0.reasons.0', 'Lo organiza Club de Robótica, que trabaja con «Robótica».');
+    }
+
     public function test_empty_filters_list_upcoming_events_without_inventing_matches(): void
     {
         $first = $this->event('Taller de cerámica', '2026-11-05 10:00');

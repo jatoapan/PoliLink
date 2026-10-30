@@ -176,7 +176,7 @@ class DiscoveryService
 
         foreach ($keywords as $keyword) {
             foreach ($fields as $field => $texts) {
-                $found = collect($texts)->flatMap(fn (?string $text) => $this->keywords->matchesIn($keyword, $text))->unique()->all();
+                $found = collect($texts)->flatMap(fn (?string $text) => $this->keywords->matchesIn($keyword, $text))->all();
 
                 if ($found !== []) {
                     $matches[$field] = [...$matches[$field], ...$found];
@@ -190,13 +190,18 @@ class DiscoveryService
     }
 
     /**
-     * Formats ["a", "b", "c"] as «a», «b» y «c».
+     * Formats ["a", "b", "c"] as «a», «b» y «c», listing words that differ
+     * only in case or accents once.
      *
      * @param  array<int, string>  $words
      */
     private function quoteList(array $words): string
     {
-        $quoted = array_map(fn (string $word) => "«{$word}»", array_values(array_unique($words)));
+        $quoted = collect($words)
+            ->unique(fn (string $word) => DiscoveryKeywords::fold($word))
+            ->map(fn (string $word) => "«{$word}»")
+            ->values()
+            ->all();
         $last = array_pop($quoted);
 
         return $quoted === [] ? $last : implode(', ', $quoted).' y '.$last;
