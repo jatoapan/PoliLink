@@ -7,6 +7,8 @@ export const discoveryIntentSchema = z.enum(['events', 'communities', 'both'])
 
 export const discoveryModeSchema = z.enum(['ai', 'fallback'])
 
+export const discoveryScopeSchema = z.enum(['all', 'events', 'communities'])
+
 const discoveryCatalogFilterSchema = z.object({
   code: z.string(),
   name: z.string(),
@@ -36,6 +38,7 @@ export const discoveryCommunityResultSchema = communitySchema.extend({
 
 export const discoveryResultSchema = z.object({
   mode: discoveryModeSchema,
+  scope: discoveryScopeSchema,
   fallback_reason: z.string().nullable(),
   interpretation: discoveryInterpretationSchema,
   events: z.array(discoveryEventResultSchema),
@@ -48,6 +51,7 @@ export const discoveryResultEnvelopeSchema = z.object({
 
 export type DiscoveryIntent = z.infer<typeof discoveryIntentSchema>
 export type DiscoveryMode = z.infer<typeof discoveryModeSchema>
+export type DiscoveryScope = z.infer<typeof discoveryScopeSchema>
 export type DiscoveryInterpretation = z.infer<
   typeof discoveryInterpretationSchema
 >

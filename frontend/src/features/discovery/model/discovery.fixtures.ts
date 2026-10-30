@@ -50,6 +50,7 @@ export function discoveryResultFixture(
 ): DiscoveryResult {
   return {
     mode: 'ai',
+    scope: 'all',
     fallback_reason: null,
     interpretation: {
       intent: 'both',

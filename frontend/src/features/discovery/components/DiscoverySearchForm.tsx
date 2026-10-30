@@ -16,6 +16,7 @@ type DiscoverySearchFormProps = {
   /** Whether the search for `initialQuery` is in flight. */
   isSearching: boolean
   serverError?: string | null
+  placeholder?: string
   onSearch: (query: string) => void
 }
 
@@ -23,6 +24,7 @@ export function DiscoverySearchForm({
   initialQuery,
   isSearching,
   serverError = null,
+  placeholder = 'Por ejemplo: talleres presenciales de robótica los viernes',
   onSearch,
 }: DiscoverySearchFormProps) {
   const inputId = useId()
@@ -74,7 +76,7 @@ export function DiscoverySearchForm({
               event.currentTarget.form?.requestSubmit()
             }
           }}
-          placeholder="Por ejemplo: talleres presenciales de robótica los viernes"
+          placeholder={placeholder}
           value={value}
         />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

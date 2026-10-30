@@ -15,28 +15,38 @@ export function DiscoveryInterpretationSummary({
   result,
 }: DiscoveryInterpretationSummaryProps) {
   const { interpretation } = result
-  const filters = [
-    ...interpretation.keywords.map((keyword) => ({
-      key: `keyword-${keyword}`,
-      label: keyword,
-      kind: 'Tema',
-    })),
-    ...interpretation.categories.map((category) => ({
-      key: `category-${category.code}`,
-      label: category.name,
-      kind: 'Categoría',
-    })),
-    ...interpretation.modalities.map((modality) => ({
-      key: `modality-${modality.code}`,
-      label: modality.name,
-      kind: 'Modalidad',
-    })),
-    ...interpretation.weekdays.map((weekday) => ({
-      key: `weekday-${weekday.iso}`,
-      label: weekday.name,
-      kind: 'Día',
-    })),
-  ]
+  const keywordFilters = interpretation.keywords.map((keyword) => ({
+    key: `keyword-${keyword}`,
+    label: keyword,
+    kind: 'Tema',
+  }))
+  // Communities are matched by topic only, so event filters are not shown
+  // when the search is limited to communities.
+  const eventFilters =
+    result.scope === 'communities'
+      ? []
+      : [
+          ...interpretation.categories.map((category) => ({
+            key: `category-${category.code}`,
+            label: category.name,
+            kind: 'Categoría',
+          })),
+          ...interpretation.modalities.map((modality) => ({
+            key: `modality-${modality.code}`,
+            label: modality.name,
+            kind: 'Modalidad',
+          })),
+          ...interpretation.weekdays.map((weekday) => ({
+            key: `weekday-${weekday.iso}`,
+            label: weekday.name,
+            kind: 'Día',
+          })),
+        ]
+  const filters = [...keywordFilters, ...eventFilters]
+  const emptyFiltersMessage =
+    result.scope === 'communities'
+      ? 'No identificamos temas concretos, así que mostramos las comunidades más activas.'
+      : 'No identificamos temas, días ni modalidades concretos, así que mostramos los próximos eventos publicados.'
 
   return (
     <section aria-labelledby="discovery-interpretation" className="space-y-3">
@@ -63,11 +73,13 @@ export function DiscoveryInterpretationSummary({
       )}
 
       <ul aria-label="Filtros aplicados" className="flex flex-wrap gap-2">
-        <li>
-          <Badge variant="outline">
-            Buscas: {discoveryIntentLabels[interpretation.intent]}
-          </Badge>
-        </li>
+        {result.scope === 'all' && (
+          <li>
+            <Badge variant="outline">
+              Buscas: {discoveryIntentLabels[interpretation.intent]}
+            </Badge>
+          </li>
+        )}
         {filters.map((filter) => (
           <li key={filter.key}>
             <Badge variant="outline">
@@ -78,10 +90,7 @@ export function DiscoveryInterpretationSummary({
         ))}
       </ul>
       {filters.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No identificamos temas, días ni modalidades concretos, así que
-          mostramos los próximos eventos publicados.
-        </p>
+        <p className="text-sm text-muted-foreground">{emptyFiltersMessage}</p>
       )}
     </section>
   )

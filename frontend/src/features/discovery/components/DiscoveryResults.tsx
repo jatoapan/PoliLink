@@ -9,6 +9,8 @@ import { Button } from '@/shared/ui/button'
 
 type DiscoveryResultsProps = {
   result: DiscoveryResult
+  /** The submitted query, used to continue the search in another section. */
+  query: string
 }
 
 function pluralize(count: number, singular: string, plural: string): string {
@@ -68,49 +70,94 @@ function CommunityResults({ result }: DiscoveryResultsProps) {
   )
 }
 
-export function DiscoveryResults({ result }: DiscoveryResultsProps) {
-  const eventCount = result.events.length
-  const communityCount = result.communities.length
+const scopedEmptyStates = {
+  all: {
+    title: 'No encontramos coincidencias',
+    description:
+      'Prueba con otras palabras, otro día o sin modalidad, o explora el catálogo completo.',
+  },
+  events: {
+    title: 'No encontramos eventos que coincidan',
+    description:
+      'Prueba con otras palabras, otro día o sin modalidad, o busca también entre las comunidades.',
+  },
+  communities: {
+    title: 'No encontramos comunidades que coincidan',
+    description:
+      'Prueba con otros temas o busca también entre los eventos publicados.',
+  },
+} as const
 
-  if (eventCount === 0 && communityCount === 0) {
-    return (
-      <section className="rounded-xl border border-dashed p-10 text-center">
-        <h2 className="font-heading text-xl font-medium">
-          No encontramos coincidencias
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          Prueba con otras palabras, otro día o sin modalidad, o explora el
-          catálogo completo.
-        </p>
-        <div className="mt-5 flex flex-wrap justify-center gap-3">
+function ResultsEmptyState({ result, query }: DiscoveryResultsProps) {
+  const emptyState = scopedEmptyStates[result.scope]
+
+  return (
+    <section className="rounded-xl border border-dashed p-10 text-center">
+      <h2 className="font-heading text-xl font-medium">{emptyState.title}</h2>
+      <p className="mt-2 text-muted-foreground">{emptyState.description}</p>
+      <div className="mt-5 flex flex-wrap justify-center gap-3">
+        {result.scope === 'all' ? (
+          <>
+            <Button asChild variant="outline">
+              <Link to={appRoutes.events}>Ver todos los eventos</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to={appRoutes.communities}>Ver comunidades</Link>
+            </Button>
+          </>
+        ) : (
           <Button asChild variant="outline">
-            <Link to={appRoutes.events}>Ver todos los eventos</Link>
+            <Link to={discoverUrl(query)}>Buscar en eventos y comunidades</Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link to={appRoutes.communities}>Ver comunidades</Link>
-          </Button>
-        </div>
-      </section>
-    )
+        )}
+      </div>
+    </section>
+  )
+}
+
+function discoverUrl(query: string): string {
+  return `${appRoutes.discover}?${new URLSearchParams({ q: query }).toString()}`
+}
+
+function resultsSummary(result: DiscoveryResult): string {
+  const events = pluralize(result.events.length, 'evento', 'eventos')
+  const communities = pluralize(
+    result.communities.length,
+    'comunidad',
+    'comunidades',
+  )
+
+  if (result.scope === 'events') {
+    return `${events} ${result.events.length === 1 ? 'encontrado' : 'encontrados'}.`
+  }
+  if (result.scope === 'communities') {
+    return `${communities} ${result.communities.length === 1 ? 'encontrada' : 'encontradas'}.`
   }
 
+  return `${events} y ${communities} encontrados.`
+}
+
+export function DiscoveryResults({ result, query }: DiscoveryResultsProps) {
+  if (result.events.length === 0 && result.communities.length === 0) {
+    return <ResultsEmptyState query={query} result={result} />
+  }
+
+  const events =
+    result.scope === 'communities' ? null : (
+      <EventResults key="events" query={query} result={result} />
+    )
+  const communities =
+    result.scope === 'events' ? null : (
+      <CommunityResults key="communities" query={query} result={result} />
+    )
   const sections =
     result.interpretation.intent === 'communities'
-      ? [
-          <CommunityResults key="communities" result={result} />,
-          <EventResults key="events" result={result} />,
-        ]
-      : [
-          <EventResults key="events" result={result} />,
-          <CommunityResults key="communities" result={result} />,
-        ]
+      ? [communities, events]
+      : [events, communities]
 
   return (
     <div className="space-y-10">
-      <p className="text-sm text-muted-foreground">
-        {pluralize(eventCount, 'evento', 'eventos')} y{' '}
-        {pluralize(communityCount, 'comunidad', 'comunidades')} encontrados.
-      </p>
+      <p className="text-sm text-muted-foreground">{resultsSummary(result)}</p>
       {sections}
     </div>
   )

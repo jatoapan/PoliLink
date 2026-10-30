@@ -40,13 +40,42 @@ describe('discovery api', () => {
 
     const result = await discoveryApi.search('IA presencial los viernes')
 
-    expect(receivedBody).toEqual({ query: 'IA presencial los viernes' })
+    expect(receivedBody).toEqual({
+      query: 'IA presencial los viernes',
+      scope: 'all',
+    })
     expect(receivedToken).toBe('csrf-token')
     expect(result.mode).toBe('ai')
     expect(result.events[0]?.reasons).toContain(
       'Modalidad presencial, como pediste.',
     )
     expect(result.communities[0]?.upcoming_events_count).toBe(4)
+  })
+
+  it('sends the requested scope and parses scoped results', async () => {
+    let receivedBody: unknown
+
+    server.use(
+      csrfHandler(),
+      http.post(`${apiUrl}/discovery/search`, async ({ request }) => {
+        receivedBody = await request.json()
+
+        return HttpResponse.json({
+          data: discoveryResultFixture({ scope: 'communities', events: [] }),
+        })
+      }),
+    )
+
+    const result = await discoveryApi.search('gente que programe', {
+      scope: 'communities',
+    })
+
+    expect(receivedBody).toEqual({
+      query: 'gente que programe',
+      scope: 'communities',
+    })
+    expect(result.scope).toBe('communities')
+    expect(result.events).toEqual([])
   })
 
   it('parses fallback results with their reason', async () => {

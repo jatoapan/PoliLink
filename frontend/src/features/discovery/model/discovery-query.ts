@@ -1,3 +1,5 @@
+import type { DiscoveryScope } from '@/features/discovery/model/discovery.schemas'
+
 /** Mirrors the `query` rules of `DiscoverySearchRequest` in the backend. */
 export const DISCOVERY_QUERY_MIN_LENGTH = 3
 export const DISCOVERY_QUERY_MAX_LENGTH = 300
@@ -27,6 +29,6 @@ export function getDiscoveryQueryError(value: string): string | null {
 
 export const discoveryQueryKeys = {
   all: ['discovery'] as const,
-  search: (query: string) =>
-    [...discoveryQueryKeys.all, 'search', query] as const,
+  search: (query: string, scope: DiscoveryScope) =>
+    [...discoveryQueryKeys.all, 'search', scope, query] as const,
 }
