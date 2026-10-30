@@ -27,6 +27,8 @@ class Event extends Model
 {
     use HasFactory;
 
+    public const MAX_SEARCH_KEYWORDS = 8;
+
     protected function casts(): array
     {
         return [
@@ -93,6 +95,38 @@ class Event extends Model
     public function scopeInModalities(Builder $query, array $codes): void
     {
         $query->whereHas('modality', fn (Builder $query) => $query->whereIn('code', $codes));
+    }
+
+    /**
+     * Matches events whose title, description, or community name or description
+     * contains any of the keywords. `%`, `_` and `!` are matched literally.
+     *
+     * @param  array<int, mixed>  $keywords
+     */
+    public function scopeMatchingKeywords(Builder $query, array $keywords): void
+    {
+        $patterns = collect($keywords)
+            ->filter(fn (mixed $keyword) => is_string($keyword))
+            ->map(fn (string $keyword) => trim($keyword))
+            ->filter(fn (string $keyword) => $keyword !== '')
+            ->unique()
+            ->take(self::MAX_SEARCH_KEYWORDS)
+            ->map(fn (string $keyword) => '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $keyword).'%')
+            ->values();
+
+        if ($patterns->isEmpty()) {
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($patterns) {
+            foreach ($patterns as $pattern) {
+                $query->orWhereRaw($query->qualifyColumn('title')." like ? escape '!'", [$pattern])
+                    ->orWhereRaw($query->qualifyColumn('description')." like ? escape '!'", [$pattern])
+                    ->orWhereHas('community', fn (Builder $query) => $query
+                        ->whereRaw($query->qualifyColumn('name')." like ? escape '!'", [$pattern])
+                        ->orWhereRaw($query->qualifyColumn('description')." like ? escape '!'", [$pattern]));
+            }
+        });
     }
 
     public function getAvailableCapacityAttribute(): int
