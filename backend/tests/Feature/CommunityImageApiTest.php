@@ -84,8 +84,10 @@ class CommunityImageApiTest extends TestCase
 
     public function test_public_community_resources_expose_a_null_image_url_without_a_logo(): void
     {
+        Storage::fake('public');
         $this->seed();
         $community = Community::query()->where('name', 'TAWS')->sole();
+        $community->update(['image_path' => null]);
 
         $this->getJson("/api/communities/{$community->slug}")
             ->assertOk()
