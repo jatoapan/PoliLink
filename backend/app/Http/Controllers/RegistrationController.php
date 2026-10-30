@@ -150,7 +150,7 @@ class RegistrationController extends Controller
         abort_if(
             $event->starts_at->isPast(),
             Response::HTTP_CONFLICT,
-            'El evento ya finalizó.',
+            'Las inscripciones cerraron porque el evento ya comenzó.',
         );
     }
 

@@ -83,7 +83,7 @@ class RegistrationApiTest extends TestCase
 
         $this->authenticatedPost($newUser, "/api/events/{$event->id}/registrations")
             ->assertConflict()
-            ->assertJsonPath('message', 'El evento ya finalizó.');
+            ->assertJsonPath('message', 'Las inscripciones cerraron porque el evento ya comenzó.');
 
         $this->assertDatabaseMissing('registrations', [
             'event_id' => $event->id,

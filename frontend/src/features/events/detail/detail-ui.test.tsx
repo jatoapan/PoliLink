@@ -107,7 +107,7 @@ describe('public event detail', () => {
     ).toHaveAttribute('href', expect.stringContaining(appRoutes.login))
   })
 
-  it('marks events that already started as finished instead of offering registration', async () => {
+  it('closes registration for events that already started', async () => {
     server.use(
       http.get(`${apiUrl}/events/7`, () =>
         HttpResponse.json({
@@ -118,7 +118,7 @@ describe('public event detail', () => {
 
     renderEventDetail(7)
 
-    expect(await screen.findByText('Evento finalizado')).toBeInTheDocument()
+    expect(await screen.findByText('Inscripciones cerradas')).toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Inicia sesión para inscribirte' }),
     ).not.toBeInTheDocument()

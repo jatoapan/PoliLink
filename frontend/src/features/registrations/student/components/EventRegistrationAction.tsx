@@ -53,9 +53,9 @@ export function EventRegistrationAction({
   if (hasEventStarted(event)) {
     return (
       <Alert>
-        <AlertTitle>Evento finalizado</AlertTitle>
+        <AlertTitle>Inscripciones cerradas</AlertTitle>
         <AlertDescription>
-          Este evento ya comenzó y no acepta inscripciones.
+          Este evento ya comenzó y no acepta nuevas inscripciones.
         </AlertDescription>
       </Alert>
     )
