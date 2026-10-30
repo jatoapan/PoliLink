@@ -74,6 +74,40 @@ class RegistrationApiTest extends TestCase
         $this->authenticatedPost($newUser, "/api/events/{$event->id}/registrations")->assertConflict();
     }
 
+    public function test_registration_on_an_event_that_already_started_is_rejected(): void
+    {
+        $this->seed();
+        $event = $this->seededEvent();
+        $event->update(['starts_at' => now()->subHour()]);
+        $newUser = $this->createUser('past-event-user@espol.edu.ec');
+
+        $this->authenticatedPost($newUser, "/api/events/{$event->id}/registrations")
+            ->assertConflict()
+            ->assertJsonPath('message', 'El evento ya finalizó.');
+
+        $this->assertDatabaseMissing('registrations', [
+            'event_id' => $event->id,
+            'user_id' => $newUser->id,
+        ]);
+    }
+
+    public function test_registration_on_an_event_of_an_inactive_community_is_rejected(): void
+    {
+        $this->seed();
+        $event = $this->seededEvent();
+        $event->community->update(['is_active' => false]);
+        $newUser = $this->createUser('inactive-community-user@espol.edu.ec');
+
+        $this->authenticatedPost($newUser, "/api/events/{$event->id}/registrations")
+            ->assertConflict()
+            ->assertJsonPath('message', 'La comunidad del evento no está activa.');
+
+        $this->assertDatabaseMissing('registrations', [
+            'event_id' => $event->id,
+            'user_id' => $newUser->id,
+        ]);
+    }
+
     public function test_registration_when_event_is_full_is_rejected(): void
     {
         $this->seed();

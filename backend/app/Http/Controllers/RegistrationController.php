@@ -22,6 +22,8 @@ class RegistrationController extends Controller
         [$registration, $wasReactivated] = DB::transaction(function () use ($event, $user) {
             $lockedEvent = Event::query()->lockForUpdate()->findOrFail($event->id);
             $this->ensureNotCancelled($lockedEvent);
+            $this->ensureNotStarted($lockedEvent);
+            $this->ensureCommunityIsActive($lockedEvent);
 
             $hasActiveRegistration = Registration::query()
                 ->where('event_id', $lockedEvent->id)
@@ -140,6 +142,24 @@ class RegistrationController extends Controller
             $event->status === EventStatus::Cancelled,
             Response::HTTP_CONFLICT,
             'El evento está cancelado.',
+        );
+    }
+
+    private function ensureNotStarted(Event $event): void
+    {
+        abort_if(
+            $event->starts_at->isPast(),
+            Response::HTTP_CONFLICT,
+            'El evento ya finalizó.',
+        );
+    }
+
+    private function ensureCommunityIsActive(Event $event): void
+    {
+        abort_unless(
+            $event->community()->where('is_active', true)->exists(),
+            Response::HTTP_CONFLICT,
+            'La comunidad del evento no está activa.',
         );
     }
 
