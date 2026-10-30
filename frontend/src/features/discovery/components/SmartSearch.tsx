@@ -27,6 +27,13 @@ const placeholders: Record<DiscoveryScope, string> = {
   communities: 'Por ejemplo: quiero conocer gente que haga música',
 }
 
+const hints: Record<DiscoveryScope, string> = {
+  all: 'Describe tus intereses, días o modalidad con tus propias palabras.',
+  events: 'Describe tus intereses, días o modalidad con tus propias palabras.',
+  communities:
+    'Describe tus intereses o con qué tipo de personas quieres reunirte.',
+}
+
 function readValidationMessage(error: unknown): string | null {
   if (!(error instanceof ApiError) || error.kind !== 'validation') return null
 
@@ -67,6 +74,7 @@ export function SmartSearch({ scope, query, onQueryChange }: SmartSearchProps) {
         isSearching={search.isFetching}
         key={query}
         onSearch={handleSearch}
+        hint={hints[scope]}
         placeholder={placeholders[scope]}
         serverError={queryError ?? validationMessage}
       />

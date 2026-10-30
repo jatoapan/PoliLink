@@ -17,6 +17,7 @@ type DiscoverySearchFormProps = {
   isSearching: boolean
   serverError?: string | null
   placeholder?: string
+  hint?: string
   onSearch: (query: string) => void
 }
 
@@ -25,6 +26,7 @@ export function DiscoverySearchForm({
   isSearching,
   serverError = null,
   placeholder = 'Por ejemplo: talleres presenciales de robótica los viernes',
+  hint = 'Describe tus intereses, días o modalidad con tus propias palabras.',
   onSearch,
 }: DiscoverySearchFormProps) {
   const inputId = useId()
@@ -81,8 +83,7 @@ export function DiscoverySearchForm({
         />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground" id={hintId}>
-            Describe tus intereses, días o modalidad con tus propias palabras.
-            Entre 3 y {DISCOVERY_QUERY_MAX_LENGTH} caracteres.
+            {hint} Entre 3 y {DISCOVERY_QUERY_MAX_LENGTH} caracteres.
           </p>
           <Button
             className="shrink-0"

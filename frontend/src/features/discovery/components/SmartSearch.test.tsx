@@ -92,6 +92,9 @@ describe('smart search', () => {
     expect(screen.queryByText('viernes')).not.toBeInTheDocument()
     expect(screen.queryByText('Presencial')).not.toBeInTheDocument()
     expect(
+      screen.getByText(/Describe tus intereses o con qué tipo de personas/),
+    ).toBeInTheDocument()
+    expect(
       screen.queryByRole('heading', { name: 'Eventos' }),
     ).not.toBeInTheDocument()
   })
