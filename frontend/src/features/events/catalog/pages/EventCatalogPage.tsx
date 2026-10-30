@@ -5,6 +5,14 @@ import { Link, useSearchParams } from 'react-router'
 import { appRoutes } from '@/app/routes'
 import { useAuth } from '@/features/auth/auth-context'
 import { hasRole } from '@/features/auth/model/auth-helpers'
+import { SearchModeToggle } from '@/features/discovery/components/SearchModeToggle'
+import { SmartSearch } from '@/features/discovery/components/SmartSearch'
+import {
+  readSearchMode,
+  readSmartQuery,
+  searchParamsForMode,
+  smartSearchParams,
+} from '@/features/discovery/model/search-mode'
 import { CommunityOrganizerActions } from '@/features/events/catalog/components/CommunityOrganizerActions'
 import { EventCard } from '@/features/events/catalog/components/EventCard'
 import { EventCatalogFilters } from '@/features/events/catalog/components/EventCatalogFilters'
@@ -29,8 +37,11 @@ export function EventCatalogPage() {
   const { status, user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const filters = parseCatalogFilters(searchParams)
+  const searchMode = readSearchMode(searchParams)
   const [searchInput, setSearchInput] = useState(filters.search)
-  const catalogQuery = usePublicEventCatalog(filters)
+  const catalogQuery = usePublicEventCatalog(filters, {
+    enabled: searchMode === 'classic',
+  })
   const referenceData = useEventReferenceData()
 
   useEffect(() => {
@@ -113,85 +124,106 @@ export function EventCatalogPage() {
             </div>
             <CommunityOrganizerActions variant={calloutVariant} />
           </div>
+          <SearchModeToggle
+            mode={searchMode}
+            onModeChange={(mode) => setSearchParams(searchParamsForMode(mode))}
+          />
         </header>
 
-        <EventCatalogFilters
-          categories={referenceData.categories}
-          communities={referenceData.communities}
-          filters={filters}
-          modalities={referenceData.modalities}
-          onFilterChange={handleFilterChange}
-          onReset={handleReset}
-          onSearchChange={setSearchInput}
-          searchInput={searchInput}
-        />
-
-        {referenceData.isError && (
-          <Alert>
-            <AlertTitle>Algunos filtros no están disponibles</AlertTitle>
-            <AlertDescription>
-              Puedes continuar buscando; vuelve a intentarlo para cargar las
-              categorías, modalidades y comunidades.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {catalogQuery.isPending && <EventCatalogSkeleton />}
-
-        {catalogQuery.isError && (
-          <ApiErrorFeedback
-            error={catalogQuery.error}
-            isRetrying={catalogQuery.isFetching}
-            messageOverrides={{
-              validation:
-                'Los filtros enviados no son válidos. Revisa la búsqueda e inténtalo de nuevo.',
-            }}
-            onRetry={() => void catalogQuery.refetch()}
-            title="No se pudo cargar los eventos"
+        {searchMode === 'smart' ? (
+          <SmartSearch
+            onQueryChange={(query) => setSearchParams(smartSearchParams(query))}
+            query={readSmartQuery(searchParams)}
+            scope="events"
           />
-        )}
-
-        {catalogQuery.isSuccess && eventPage && eventPage.data.length === 0 && (
-          <section className="rounded-xl border border-dashed p-10 text-center">
-            <h2 className="font-heading text-xl font-medium">
-              No encontramos eventos
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              Prueba con otros términos o elimina los filtros activos.
-            </p>
-            {(activeFilterCount > 0 || filters.search) && (
-              <Button
-                className="mt-5"
-                onClick={handleResetAll}
-                variant="outline"
-              >
-                Limpiar búsqueda y filtros
-              </Button>
-            )}
-          </section>
-        )}
-
-        {catalogQuery.isSuccess && eventPage && eventPage.data.length > 0 && (
-          <section aria-busy={catalogQuery.isFetching} className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-              <p>
-                {eventPage.meta.total === 1
-                  ? '1 evento publicado'
-                  : `${eventPage.meta.total} eventos publicados`}
-              </p>
-              {catalogQuery.isFetching && <p>Actualizando resultados…</p>}
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {eventPage.data.map((event) => (
-                <EventCard event={event} key={event.id} />
-              ))}
-            </div>
-            <EventPagination
-              currentPage={eventPage.meta.current_page}
-              lastPage={eventPage.meta.last_page}
-              onPageChange={handlePageChange}
+        ) : (
+          <>
+            <EventCatalogFilters
+              categories={referenceData.categories}
+              communities={referenceData.communities}
+              filters={filters}
+              modalities={referenceData.modalities}
+              onFilterChange={handleFilterChange}
+              onReset={handleReset}
+              onSearchChange={setSearchInput}
+              searchInput={searchInput}
             />
-          </section>
+
+            {referenceData.isError && (
+              <Alert>
+                <AlertTitle>Algunos filtros no están disponibles</AlertTitle>
+                <AlertDescription>
+                  Puedes continuar buscando; vuelve a intentarlo para cargar las
+                  categorías, modalidades y comunidades.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {catalogQuery.isPending && <EventCatalogSkeleton />}
+
+            {catalogQuery.isError && (
+              <ApiErrorFeedback
+                error={catalogQuery.error}
+                isRetrying={catalogQuery.isFetching}
+                messageOverrides={{
+                  validation:
+                    'Los filtros enviados no son válidos. Revisa la búsqueda e inténtalo de nuevo.',
+                }}
+                onRetry={() => void catalogQuery.refetch()}
+                title="No se pudo cargar los eventos"
+              />
+            )}
+
+            {catalogQuery.isSuccess &&
+              eventPage &&
+              eventPage.data.length === 0 && (
+                <section className="rounded-xl border border-dashed p-10 text-center">
+                  <h2 className="font-heading text-xl font-medium">
+                    No encontramos eventos
+                  </h2>
+                  <p className="mt-2 text-muted-foreground">
+                    Prueba con otros términos o elimina los filtros activos.
+                  </p>
+                  {(activeFilterCount > 0 || filters.search) && (
+                    <Button
+                      className="mt-5"
+                      onClick={handleResetAll}
+                      variant="outline"
+                    >
+                      Limpiar búsqueda y filtros
+                    </Button>
+                  )}
+                </section>
+              )}
+
+            {catalogQuery.isSuccess &&
+              eventPage &&
+              eventPage.data.length > 0 && (
+                <section
+                  aria-busy={catalogQuery.isFetching}
+                  className="space-y-6"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+                    <p>
+                      {eventPage.meta.total === 1
+                        ? '1 evento publicado'
+                        : `${eventPage.meta.total} eventos publicados`}
+                    </p>
+                    {catalogQuery.isFetching && <p>Actualizando resultados…</p>}
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {eventPage.data.map((event) => (
+                      <EventCard event={event} key={event.id} />
+                    ))}
+                  </div>
+                  <EventPagination
+                    currentPage={eventPage.meta.current_page}
+                    lastPage={eventPage.meta.last_page}
+                    onPageChange={handlePageChange}
+                  />
+                </section>
+              )}
+          </>
         )}
       </div>
     </main>

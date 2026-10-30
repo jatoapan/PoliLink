@@ -23,7 +23,7 @@ export const eventQueryKeys = {
 
 export function usePublicEventCatalog(
   filters: CatalogFilters,
-  options: { perPage?: number } = {},
+  options: { perPage?: number; enabled?: boolean } = {},
 ) {
   const perPage = options.perPage ?? DEFAULT_EVENT_PAGE_SIZE
 
@@ -31,6 +31,7 @@ export function usePublicEventCatalog(
     queryKey: eventQueryKeys.catalog(filters, perPage),
     queryFn: () => publicEventsApi.list(toPublicEventFilters(filters, perPage)),
     placeholderData: keepPreviousData,
+    enabled: options.enabled ?? true,
   })
 }
 
