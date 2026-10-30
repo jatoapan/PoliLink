@@ -417,6 +417,20 @@ class DiscoverySearchApiTest extends TestCase
             ->assertJsonPath('data.events.0.reasons.0', 'Lo organiza Club de Robótica, que trabaja con «Robótica».');
     }
 
+    public function test_looking_for_people_without_topics_suggests_the_most_active_communities(): void
+    {
+        $this->event('Taller de bienvenida', '2026-11-05 10:00', ['community_id' => $this->webCommunity->id]);
+        $this->event('Noche de juegos', '2026-11-06 18:00', ['community_id' => $this->webCommunity->id]);
+        $this->event('Charla abierta', '2026-11-09 10:00');
+        Community::factory()->create(['name' => 'Club inactivo', 'is_active' => false]);
+        $this->fakeGemma([['intent' => 'communities', 'keywords' => [], 'categories' => [], 'modalities' => [], 'weekdays' => []]]);
+
+        $this->search('quiero salir de mi zona de confort y conocer gente nueva')
+            ->assertOk()
+            ->assertJsonPath('data.communities.*.id', [$this->webCommunity->id, $this->aiClub->id, Community::query()->where('name', 'Club de Ajedrez')->sole()->id])
+            ->assertJsonPath('data.communities.0.reasons', ['Tiene 2 eventos próximos publicados.']);
+    }
+
     public function test_empty_filters_list_upcoming_events_without_inventing_matches(): void
     {
         $first = $this->event('Taller de cerámica', '2026-11-05 10:00');

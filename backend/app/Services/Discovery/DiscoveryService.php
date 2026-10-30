@@ -80,7 +80,10 @@ class DiscoveryService
      */
     private function communities(DiscoveryInterpretation $interpretation, array $terms): array
     {
-        if ($terms === []) {
+        // Without topics there is nothing to match a community against, unless
+        // the student is looking for people to meet: then the most active
+        // communities are suggested.
+        if ($terms === [] && $interpretation->intent === DiscoveryInterpretation::INTENT_EVENTS) {
             return [];
         }
 
@@ -88,6 +91,7 @@ class DiscoveryService
             ->where('is_active', true)
             ->matchingKeywords($terms)
             ->withCount(['events as upcoming_events_count' => fn (Builder $query) => $query->publiclyListed()])
+            ->orderByDesc('upcoming_events_count')
             ->orderBy('name')
             ->limit(self::CANDIDATE_LIMIT)
             ->get()
