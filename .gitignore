@@ -1,0 +1,33 @@
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Dependencias
+node_modules/
+vendor/
+
+# Compilación y cachés
+dist/
+build/
+.cache/
+*.tsbuildinfo
+coverage/
+
+# Bases de datos y archivos locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs y diagnósticos
+*.log
+*.pid
+.phpunit.result.cache
+
+# Archivos del sistema y editores
+.DS_Store
+.idea/
+.vscode/
+.zed/
+

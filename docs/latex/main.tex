@@ -1,0 +1,427 @@
+\documentclass[12pt]{article}
+
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+
+\setstretch{1.15}
+\setlist[itemize]{noitemsep,topsep=3pt}
+\setlist[enumerate]{noitemsep,topsep=3pt}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{PoliLink: Plataforma web para la gestión y difusión centralizada de eventos de comunidades ESPOL}
+\author{Darwin Leonardo Díaz González \and Gabriel Alejandro Tumbaco Santana}
+\date{19 de agosto de 2026}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1.2cm}
+    {\Large\bfseries Escuela Superior Politécnica del Litoral\par}
+    \vspace{0.25cm}
+    {\large Facultad de Ingeniería en Electricidad y Computación\par}
+    \vspace{0.15cm}
+    {\large Lenguajes de Programación\par}
+    \vspace{1.4cm}
+    \rule{0.72\textwidth}{0.8pt}\par
+    \vspace{0.55cm}
+    {\Large\bfseries Informe Final\par}
+    \vspace{0.55cm}
+    {\LARGE\bfseries PoliLink\par}
+    \vspace{0.45cm}
+    \begin{minipage}{0.76\textwidth}
+        \centering
+        \large Plataforma web para la gestión y difusión centralizada de eventos de comunidades ESPOL
+    \end{minipage}\par
+    \vspace{0.55cm}
+    \rule{0.72\textwidth}{0.8pt}\par
+    \vfill
+    \begin{tabular}{c}
+        \textbf{Integrantes} \\[0.25cm]
+        Darwin Leonardo Díaz González \\
+        \texttt{dldiaz@espol.edu.ec} \\[0.35cm]
+        Gabriel Alejandro Tumbaco Santana \\
+        \texttt{gatumbac@espol.edu.ec}
+    \end{tabular}\par
+    \vspace{1.1cm}
+    \begin{tabular}{c}
+        \textbf{Profesor} \\[0.2cm]
+        MSc. Rodrigo Saraguro
+    \end{tabular}\par
+    \vfill
+    {\large Guayaquil -- Ecuador\par}
+    \vspace{0.12cm}
+    {\large 19 de agosto de 2026\par}
+    \vspace*{0.7cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+\listoftables
+\newpage
+\listoffigures
+\newpage
+
+\section{Problemática a resolver}
+
+Los clubes y organizaciones estudiantiles de ESPOL desarrollan actividades académicas, culturales, profesionales y recreativas que aportan a la formación integral de los estudiantes. La institución reconoce estos grupos como espacios de desarrollo multidisciplinario y les brinda apoyo para la realización de actividades \cite{espolclubes,programaclubes}. Sin embargo, la difusión de los eventos suele realizarse de forma independiente mediante publicaciones en redes sociales, principalmente Instagram. Como resultado, la información se encuentra dispersa entre perfiles, historias y enlaces externos, por lo que un estudiante puede no enterarse a tiempo de un taller, charla, hackatón o feria de interés.
+
+Esta situación dificulta que la comunidad politécnica conozca oportunamente las actividades disponibles y también limita a los organizadores al momento de concentrar inscripciones y consultar la asistencia esperada. Por ejemplo, cuando un club como TAWS organiza un hackatón, el evento debería poder llegar a estudiantes de distintas carreras que tengan interés en participar. Por esta razón, se propone una plataforma web centralizada que conecte a los clubes y organizaciones con los estudiantes mediante la publicación, consulta e inscripción de eventos.
+
+\section{Objetivos}
+
+\subsection{Objetivo general}
+
+Desarrollar una aplicación web que centralice la publicación, consulta e inscripción de eventos organizados por las comunidades estudiantiles de ESPOL.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+    \item Implementar un módulo para que los organizadores publiquen directamente, modifiquen y cancelen eventos con información de fecha, ubicación, categoría y cupos disponibles.
+    \item Desarrollar un catálogo que permita a los estudiantes consultar y filtrar eventos por fecha, categoría, comunidad organizadora y modalidad.
+    \item Implementar el proceso de inscripción y cancelación de inscripción, junto con la consulta de inscritos para cada organizador.
+\end{enumerate}
+
+\section{Alcance del proyecto}
+
+El proyecto consiste en un prototipo funcional de aplicación web dirigido a los estudiantes, organizadores y administradores de comunidades estudiantiles de ESPOL. La solución trabaja con cuentas locales y permite registrar comunidades, publicar eventos, consultar actividades, gestionar inscripciones y solicitar la incorporación a comunidades. La información de cada evento incluye título, descripción, categoría, fecha, hora, ubicación, modalidad, cupo y comunidad responsable.
+
+Los organizadores pueden publicar, editar y cancelar sus propios eventos directamente, sin aprobación administrativa de cada evento. Para la creación de comunidades existe un flujo separado de solicitud y revisión administrativa, mientras que la incorporación a una comunidad puede requerir aprobación del organizador responsable. No se integrará con los sistemas institucionales de autenticación, correo, calendario ni gestión académica; tampoco se procesarán pagos ni se validará la asistencia mediante códigos QR. Estas funcionalidades pueden considerarse como trabajo futuro. El mapa público del Campus Gustavo Galindo se utiliza únicamente como referencia para mostrar la ubicación textual de los eventos \cite{mapacampus}.
+
+\section{Características de la solución}
+
+La versión entregable cuenta con las siguientes características principales:
+
+\begin{itemize}
+    \item Catálogo centralizado de eventos publicados por clubes y organizaciones estudiantiles de ESPOL.
+    \item Búsqueda y filtros por fecha, categoría, modalidad y comunidad organizadora.
+    \item Vista de detalle con descripción, ubicación, cupos y enlace de inscripción.
+    \item Publicación directa, edición y cancelación de eventos por parte del organizador.
+    \item Inscripción y cancelación de inscripción por parte del estudiante.
+    \item Consulta de la lista de inscritos y de los cupos disponibles para cada evento.
+    \item Landing pública y directorio de comunidades con acceso a sus perfiles.
+    \item Solicitud y revisión de membresías de comunidades.
+    \item Panel administrativo para aprobar comunidades y mantener categorías, modalidades y ubicaciones.
+    \item Interfaz responsive con estados de carga, vacío, error y confirmación.
+\end{itemize}
+
+\section{Requerimientos funcionales implementados}
+
+Los requerimientos se distribuyen de modo que cada integrante implemente funcionalidades de lectura y escritura tanto en el frontend como en el backend. El inicio de sesión, el diseño visual y la gestión de la base de datos se consideran componentes de apoyo y no constituyen requerimientos asignados.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{3.3cm}Yp{2.8cm}}
+\toprule
+\textbf{Requerimiento} & \textbf{Descripción} & \textbf{Responsable} \\
+\midrule
+Crear, editar y cancelar eventos & Permite al organizador publicar directamente un evento, modificar su información o cancelar una publicación. & Gabriel Tumbaco \\
+Consultar y filtrar eventos & Permite al estudiante visualizar el catálogo y aplicar filtros por fecha, categoría, modalidad y comunidad organizadora. & Gabriel Tumbaco \\
+Inscribirse y cancelar inscripción & Permite al estudiante reservar un cupo disponible o retirar su inscripción de un evento. & Darwin Díaz \\
+Consultar inscritos y cupos disponibles & Permite al organizador revisar los estudiantes registrados y la disponibilidad de su evento. & Darwin Díaz \\
+\midrule
+Descubrir comunidades y solicitar membresía & Permite al estudiante consultar comunidades públicas y solicitar su incorporación a una comunidad. & Darwin Díaz \\
+\midrule
+Revisar solicitudes y administrar catálogos & Permite al administrador aprobar comunidades y mantener categorías, modalidades y ubicaciones. & Darwin Díaz \\
+\midrule
+Presentación pública y navegación de la plataforma & Permite descubrir eventos y comunidades desde una landing responsive con enlaces al catálogo. & Gabriel Tumbaco \\
+\bottomrule
+\end{tabularx}
+\caption{Requerimientos funcionales implementados.}
+\end{table}
+
+\section{Arquitectura de la aplicación}
+
+\subsection{Tipo de aplicación}
+
+PoliLink es una aplicación web responsive. Este tipo de aplicación permite que estudiantes y organizadores accedan desde un navegador en computadora o teléfono sin requerir la instalación de una aplicación móvil. Además, facilita la publicación rápida de información y la consulta de eventos antes de que se realicen.
+
+\subsection{Patrón de arquitectura}
+
+La aplicación utiliza una arquitectura cliente-servidor con el patrón Modelo--Vista--Controlador (MVC). El frontend implementado en TypeScript consume una API REST desarrollada en PHP. El backend concentra las reglas de negocio y el acceso a la base de datos, mientras que la interfaz presenta la información y envía las solicitudes de los usuarios.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=0.65cm,
+    box/.style={rectangle, rounded corners, draw=black, align=center, minimum width=2.55cm, minimum height=1.05cm, fill=gray!12},
+    arrow/.style={-{Latex[length=3mm]}, thick}
+]
+\node[box] (user) {Estudiante /\\ Organizador};
+\node[box, right=of user] (front) {Frontend\\ TypeScript + React};
+\node[box, right=of front] (api) {API REST\\ PHP + Laravel};
+\node[box, right=of api] (db) {Base de datos\\ MySQL};
+\draw[arrow] (user) -- (front);
+\draw[arrow] (front) -- (api);
+\draw[arrow] (api) -- (db);
+\end{tikzpicture}
+\caption{Arquitectura de PoliLink.}
+\end{figure}
+
+\subsection{Herramientas y frameworks}
+
+\begin{itemize}
+    \item \textbf{Framework frontend:} React 19.2.8 con TypeScript 6.0.2 para construir una interfaz reutilizable y con validación estática de tipos \cite{react,typescript}.
+    \item \textbf{Herramientas frontend:} Vite 8.2.0, React Router 8.3.0, TanStack Query 5.101.4 y Vitest 4.1.10 para desarrollo, navegación, consultas y pruebas automatizadas \cite{vite}.
+    \item \textbf{Framework backend:} Laravel 13.24.0 sobre PHP 8.3, con Laravel Sanctum 4.3.3 para sesiones locales y protección de solicitudes \cite{laravel,sanctum}.
+    \item \textbf{API:} API REST propia para administrar eventos, comunidades, inscripciones, membresías, solicitudes administrativas y catálogos.
+    \item \textbf{Persistencia y colaboración:} MySQL para persistencia de datos y Git/GitHub para control de versiones y trabajo colaborativo \cite{mysql,git}.
+\end{itemize}
+
+\section{Lenguajes de programación}
+
+\subsection{Back-end: PHP}
+
+PHP se utiliza en el backend mediante Laravel. El lenguaje se adapta al desarrollo de aplicaciones web dinámicas, cuenta con una sintaxis accesible y dispone de un ecosistema amplio para trabajar con rutas, controladores, validaciones y bases de datos \cite{php}. Su tipado dinámico favorece el desarrollo rápido de prototipos y su integración con HTML continúa siendo una característica útil en aplicaciones web.
+
+Como desventaja, el tipado dinámico puede permitir errores de tipos durante la ejecución si no se aplican validaciones y pruebas adecuadas. Además, PHP admite diferentes estilos de programación, por lo que es necesario mantener convenciones claras para conservar la legibilidad del código.
+
+\subsection{Front-end: TypeScript}
+
+TypeScript se utiliza en el frontend junto con React. TypeScript amplía JavaScript mediante tipos estáticos, lo cual permite detectar inconsistencias antes de ejecutar el programa y facilita el mantenimiento de componentes, formularios y respuestas de la API \cite{typescript}. Su compatibilidad con JavaScript permite utilizar las bibliotecas del ecosistema web sin abandonar las ventajas de la verificación de tipos.
+
+Como desventaja, TypeScript requiere una etapa de compilación a JavaScript y demanda definir interfaces y tipos adicionales. Esto puede aumentar el tiempo inicial de desarrollo, aunque reduce errores cuando el proyecto crece.
+
+\section{Diseño de la solución}
+
+\textbf{Herramienta de diseño utilizada:} Figma \cite{figma}.
+
+Durante la etapa de diseño se elaboraron bocetos de baja fidelidad para el catálogo de eventos, el detalle de evento, el panel del organizador y el formulario de creación. Estos bocetos sirvieron como referencia inicial para definir la navegación y la jerarquía de información. En el informe final se conservan las decisiones de diseño y se presentan únicamente resultados de la aplicación implementada, de acuerdo con los requisitos de la entrega.
+
+\section{Implementación final}
+
+\subsection{Backend}
+
+El backend final de PoliLink se desarrolló con Laravel, MySQL y una API REST. La
+aplicación cuenta con autenticación local mediante Laravel Sanctum, catálogo
+público de eventos, directorio de comunidades, gestión de eventos e imágenes,
+inscripciones, membresías, solicitudes de creación de comunidades y
+administración de catálogos. El repositorio del grupo se encuentra en
+\url{https://github.com/Gatumbac/PoliLink}. Los enlaces directos a las carpetas
+entregables son \url{https://github.com/Gatumbac/PoliLink/tree/main/backend} y
+\url{https://github.com/Gatumbac/PoliLink/tree/main/frontend}.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{|Y|>{\centering\arraybackslash}p{2.8cm}|>{\centering\arraybackslash}p{1.8cm}|}
+\hline
+\textbf{Implementación} & \textbf{Responsable} & \textbf{Estado} \\
+\hline
+Catálogo público de eventos, búsqueda, filtros y datos de referencia para formularios. & Gabriel Tumbaco & Hecho \\
+\hline
+Autenticación local con Laravel Sanctum, registro, inicio y cierre de sesión. & Gabriel Tumbaco & Hecho \\
+\hline
+Gestión de comunidades y consulta de comunidades y eventos propios. & Gabriel Tumbaco & Hecho \\
+\hline
+Creación, edición y cancelación de eventos propios mediante sesión autenticada. & Gabriel Tumbaco & Hecho \\
+\hline
+Carga, reemplazo y eliminación de imágenes de portada de eventos. & Gabriel Tumbaco & Hecho \\
+\hline
+Inscripción o reactivación de inscripción en eventos. & Darwin Díaz & Hecho \\
+\hline
+Cancelación de inscripción y liberación de cupos. & Darwin Díaz & Hecho \\
+\hline
+Consulta de inscritos, cupos disponibles y mis inscripciones. & Darwin Díaz & Hecho \\
+\hline
+Directorio público y detalle de comunidades. & Darwin Díaz & Hecho \\
+\hline
+Solicitud y aprobación o rechazo de membresías. & Darwin Díaz & Hecho \\
+\hline
+Solicitudes administrativas de creación de comunidades y catálogo de referencia. & Darwin Díaz & Hecho \\
+\hline
+\end{tabularx}
+\caption{Estado final de implementación del backend.}
+\end{table}
+
+El repositorio incluye pruebas automatizadas y colecciones de solicitudes para
+validar los contratos principales de la API. Las capturas del informe final se
+concentran en la sección de resultados para cumplir el límite de una evidencia
+frontend por integrante.
+\subsection{Frontend o Visualización}
+
+El frontend final de PoliLink se desarrolló con React, TypeScript y Vite. La
+interfaz utiliza componentes reutilizables, validación de formularios,
+consultas cacheadas y un diseño responsive para sus diferentes vistas. La
+implementación final incluye el catálogo y detalle de eventos, gestión de
+eventos del organizador, inscripciones, directorio de comunidades, membresías,
+panel administrativo y una landing pública interactiva.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{|Y|>{\centering\arraybackslash}p{2.8cm}|>{\centering\arraybackslash}p{1.8cm}|}
+\hline
+\textbf{Implementación} & \textbf{Responsable} & \textbf{Estado} \\
+\hline
+Configuración del frontend, componentes compartidos y estructura de la aplicación. & Gabriel Tumbaco & Hecho \\
+\hline
+Catálogo público, búsqueda, filtros y detalle de eventos. & Gabriel Tumbaco & Hecho \\
+\hline
+Gestión de eventos del organizador: comunidades, creación, edición, imágenes y cancelación. & Gabriel Tumbaco & Hecho \\
+\hline
+Landing pública interactiva con métricas, eventos y comunidades reales. & Gabriel Tumbaco & Hecho \\
+\hline
+Creación del scaffold inicial del monorepo y la aplicación frontend. & Darwin Díaz & Hecho \\
+\hline
+Integración de inscripciones, mis inscripciones, asistentes y cupos. & Darwin Díaz & Hecho \\
+\hline
+Directorio público y detalle de comunidades. & Darwin Díaz & Hecho \\
+\hline
+Solicitud y revisión de membresías de comunidades. & Darwin Díaz & Hecho \\
+\hline
+Panel administrativo para solicitudes de comunidades y catálogos. & Darwin Díaz & Hecho \\
+\hline
+\end{tabularx}
+\caption{Estado final de implementación del frontend.}
+\end{table}
+
+\section{Resultados}
+
+Para el informe final se presenta una evidencia frontend por integrante y
+cuatro capturas generales de la landing. Cada figura debe mostrar una
+funcionalidad final ejecutándose en el navegador, con datos reales o de
+demostración y sin herramientas de desarrollo visibles.
+
+% Agregar estas seis capturas antes de entregar la fuente final:
+% images/resultado-gabriel-eventos.png
+% images/resultado-darwin-admin-comunidades.png
+% images/resultado-general-landing-01-hero.png
+% images/resultado-general-landing-02-metricas-eventos.png
+% images/resultado-general-landing-03-comunidades-funciona.png
+% images/resultado-general-landing-04-cta-final.png
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/resultado-gabriel-eventos.png}
+\caption{Resultado de Gabriel: gestión de eventos propios del organizador con acceso a edición, cancelación y consulta de inscritos.}
+\label{fig:resultado-gabriel-eventos}
+\end{figure}
+
+La evidencia de la figura~\ref{fig:resultado-gabriel-eventos} muestra una
+actividad publicada por el organizador y las acciones disponibles para
+editarla, cancelarla o consultar sus inscritos.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/resultado-darwin-admin-comunidades.png}
+\caption{Resultado de Darwin: consulta de inscripciones, inscritos activos, cupo total y cupos disponibles de un evento.}
+\label{fig:resultado-darwin}
+\end{figure}
+
+La evidencia de la figura~\ref{fig:resultado-darwin} muestra la funcionalidad
+de inscripciones desarrollada por Darwin desde la vista del organizador. La
+pantalla permite consultar los inscritos activos, el cupo total y los cupos
+disponibles del evento.
+
+\section{Vista general de la solución}
+
+Además de las evidencias individuales, se incluyen cuatro capturas generales
+de la landing para mostrar sus secciones principales. Estas imágenes son
+complementarias y no sustituyen la evidencia de cada integrante.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/resultado-general-landing-01-hero.png}
+\caption{Vista general de la landing: hero público con los accesos principales al catálogo de eventos y al directorio de comunidades.}
+\label{fig:resultado-landing-hero}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/resultado-general-landing-02-metricas-eventos.png}
+\caption{Vista general de la landing: métricas públicas y sección de eventos destacados.}
+\label{fig:resultado-landing-eventos}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/resultado-general-landing-03-comunidades-funciona.png}
+\caption{Vista general de la landing: comunidades disponibles y explicación de cómo funciona PoliLink.}
+\label{fig:resultado-landing-comunidades}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/resultado-general-landing-04-cta-final.png}
+\caption{Vista general de la landing: llamado final para explorar eventos, comunidades u organizar una comunidad.}
+\label{fig:resultado-landing-cta}
+\end{figure}
+
+Las cuatro capturas generales muestran la landing completa por secciones, sin
+repetir la evidencia individual de Gabriel.
+
+\section{Conclusiones}
+
+\textbf{Gabriel Tumbaco.} El desarrollo de PoliLink permitió aplicar React,
+TypeScript, Vite y Laravel en una solución integrada para publicar y descubrir
+eventos estudiantiles. La construcción del catálogo, la gestión de eventos y
+la landing mostró la importancia de mantener contratos claros entre el
+frontend y la API, reutilizar componentes y diseñar estados de carga, error y
+vacío desde el inicio.
+
+\textbf{Darwin Díaz.} La implementación de inscripciones, asistentes,
+membresías y administración permitió comprender cómo las reglas de
+autorización y los estados del backend deben reflejarse en la interfaz. La
+integración de React con Laravel y MySQL también evidenció la necesidad de
+validar permisos, cupos y transiciones de estado para evitar operaciones
+inconsistentes.
+
+\section{Recomendaciones}
+
+\textbf{Gabriel Tumbaco.} Como mejora futura se recomienda integrar la
+autenticación institucional de ESPOL y desplegar frontend, backend y base de
+datos en un entorno controlado con variables de configuración separadas para
+desarrollo y producción.
+
+\textbf{Darwin Díaz.} Se recomienda incorporar notificaciones por correo o
+calendario para confirmar inscripciones, avisar cambios de eventos y comunicar
+decisiones sobre membresías. También sería conveniente ampliar las pruebas de
+extremo a extremo con servicios reales y agregar monitoreo para detectar
+errores de integración.
+
+\section{Referencias}
+\begin{thebibliography}{99}
+\bibitem{espolclubes} Escuela Superior Politécnica del Litoral, ``Clubes y agrupaciones estudiantiles.'' [En línea]. Disponible en: \url{https://www.espol.edu.ec/es/clubes-y-agrupaciones-estudiantiles}. [Accedido: 19-ago-2026].
+
+\bibitem{programaclubes} Unidad de Bienestar Politécnico, ``Programa de Apoyo de Clubes Estudiantiles y Organizaciones Estudiantiles Profesionales.'' [En línea]. Disponible en: \url{https://oe.espol.edu.ec/programa-de-apoyo/}. [Accedido: 19-ago-2026].
+
+\bibitem{mapacampus} Escuela Superior Politécnica del Litoral, ``Mapa del campus.'' [En línea]. Disponible en: \url{https://www.espol.edu.ec/es/mapa-del-campus}. [Accedido: 19-ago-2026].
+
+\bibitem{php} PHP Documentation Group, ``PHP: Hypertext Preprocessor.'' [En línea]. Disponible en: \url{https://www.php.net/manual/es/intro-whatis.php}. [Accedido: 19-ago-2026].
+
+\bibitem{typescript} Microsoft, ``TypeScript: JavaScript with syntax for types.'' [En línea]. Disponible en: \url{https://www.typescriptlang.org/}. [Accedido: 19-ago-2026].
+
+\bibitem{react} Meta Open Source, ``React: The library for web and native user interfaces.'' [En línea]. Disponible en: \url{https://react.dev/}. [Accedido: 19-ago-2026].
+
+\bibitem{vite} Vite Team, ``Vite: Next generation frontend tooling.'' [En línea]. Disponible en: \url{https://vite.dev/}. [Accedido: 19-ago-2026].
+
+\bibitem{laravel} Laravel, ``Laravel 13.x documentation.'' [En línea]. Disponible en: \url{https://laravel.com/docs/13.x}. [Accedido: 19-ago-2026].
+
+\bibitem{sanctum} Laravel, ``Laravel Sanctum documentation.'' [En línea]. Disponible en: \url{https://laravel.com/docs/13.x/sanctum}. [Accedido: 19-ago-2026].
+
+\bibitem{mysql} Oracle Corporation, ``MySQL 8.4 Reference Manual.'' [En línea]. Disponible en: \url{https://dev.mysql.com/doc/}. [Accedido: 19-ago-2026].
+
+\bibitem{git} Software Freedom Conservancy, ``Git documentation.'' [En línea]. Disponible en: \url{https://git-scm.com/doc}. [Accedido: 19-ago-2026].
+
+\bibitem{figma} Figma, ``Figma: The collaborative interface design tool.'' [En línea]. Disponible en: \url{https://www.figma.com/}. [Accedido: 19-ago-2026].
+\end{thebibliography}
+
+\end{document}

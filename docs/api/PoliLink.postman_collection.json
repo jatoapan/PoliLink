@@ -1,0 +1,486 @@
+{
+  "info": {
+    "_postman_id": "a8911c84-1958-45a2-a563-70bcbf57cd98",
+    "name": "PoliLink - Backend actual",
+    "description": "Colección para los endpoints implementados. Ejecuta primero Obtener cookie CSRF antes de POST, PATCH o DELETE.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "xsrfToken", "value": "" },
+    { "key": "email", "value": "gatumbac@espol.edu.ec" },
+    { "key": "firstName", "value": "Gabriel" },
+    { "key": "lastName", "value": "Tumbaco" },
+    { "key": "newStudentEmail", "value": "cambia-este-correo@espol.edu.ec" },
+    { "key": "newCommunityName", "value": "Comunidad Gabriel Agosto" },
+    { "key": "password", "value": "password" },
+    { "key": "adminEmail", "value": "admin@espol.edu.ec" },
+    { "key": "adminPassword", "value": "admin" },
+    { "key": "communityCreationRequestId", "value": "" },
+    { "key": "communityId", "value": "1" },
+    { "key": "communitySlug", "value": "taws" },
+    { "key": "membershipCommunityId", "value": "1" },
+    { "key": "membershipCommunitySlug", "value": "taws" },
+    { "key": "eventCategoryId", "value": "3" },
+    { "key": "eventModalityId", "value": "1" },
+    { "key": "locationId", "value": "1" },
+    { "key": "eventId", "value": "1" },
+    { "key": "organizerEmail", "value": "organizer@espol.edu.ec" },
+    { "key": "registrationEventId", "value": "" }
+  ],
+  "event": [],
+  "item": [
+    {
+      "name": "00. Público",
+      "item": [
+        { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/api/health" } },
+        { "name": "Catálogo de eventos", "request": { "method": "GET", "url": "{{baseUrl}}/api/events?per_page=12" } },
+        { "name": "Filtrar eventos para captura", "request": { "method": "GET", "url": "{{baseUrl}}/api/events?category=hackathon&per_page=12" } },
+        { "name": "Detalle del evento creado", "request": { "method": "GET", "url": "{{baseUrl}}/api/events/{{eventId}}" } },
+        { "name": "Categorías", "request": { "method": "GET", "url": "{{baseUrl}}/api/event-categories" } },
+        { "name": "Modalidades", "request": { "method": "GET", "url": "{{baseUrl}}/api/event-modalities" } },
+        { "name": "Ubicaciones", "request": { "method": "GET", "url": "{{baseUrl}}/api/locations" } },
+        { "name": "Comunidades públicas", "request": { "method": "GET", "url": "{{baseUrl}}/api/communities" } }
+      ]
+    },
+    {
+      "name": "Membresías propias",
+      "item": [
+        {
+          "name": "Descubrir comunidades",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/communities/discover?search=TAWS&per_page=12"
+          }
+        },
+        {
+          "name": "Perfil de comunidad",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/communities/{{membershipCommunitySlug}}"
+          }
+        },
+        {
+          "name": "Solicitar unirme a la comunidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/communities/{{membershipCommunityId}}/membership-requests"
+          }
+        },
+        {
+          "name": "Mis membresías",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/me/memberships?per_page=12"
+          }
+        },
+        {
+          "name": "Cancelar solicitud o abandonar comunidad",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/communities/{{membershipCommunityId}}/membership-requests"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Autenticación y CSRF",
+      "item": [
+        {
+          "name": "Obtener cookie CSRF",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/sanctum/csrf-cookie"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.cookies.get('XSRF-TOKEN');",
+                  "pm.test('Laravel devolvió la cookie XSRF-TOKEN', () => {",
+                  "  pm.expect(token, 'Revisa Cookies para localhost en Postman').to.exist;",
+                  "});",
+                  "if (token) {",
+                  "  pm.collectionVariables.set('xsrfToken', decodeURIComponent(token));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar estudiante nuevo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"{{firstName}}\",\n  \"last_name\": \"{{lastName}}\",\n  \"email\": \"{{newStudentEmail}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Login Gabriel",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Sesión actual",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Comunidad y eventos autenticados",
+      "item": [
+        {
+          "name": "Proponer mi comunidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{newCommunityName}}\",\n  \"description\": \"Propuesta creada desde Postman para probar PoliLink.\"\n}" },
+            "url": "{{baseUrl}}/api/community-creation-requests"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const creationRequest = pm.response.json().data;",
+                  "if (creationRequest?.id) pm.collectionVariables.set('communityCreationRequestId', String(creationRequest.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login administrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Listar propuestas de comunidades",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/admin/community-creation-requests?status=pending&per_page=12"
+          }
+        },
+        {
+          "name": "Aprobar propuesta de comunidad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/admin/community-creation-requests/{{communityCreationRequestId}}/approve"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const community = pm.response.json().data?.community;",
+                  "if (community?.id) pm.collectionVariables.set('communityId', String(community.id));",
+                  "if (community?.slug) { pm.collectionVariables.set('communitySlug', community.slug); pm.collectionVariables.set('membershipCommunitySlug', community.slug); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login solicitante después de aprobar",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Mis comunidades",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/me/communities"
+          }
+        },
+        {
+          "name": "Mis eventos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/me/events?per_page=12"
+          }
+        },
+        {
+          "name": "Crear evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) pm.collectionVariables.set('eventId', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"community_id\": {{communityId}},\n  \"event_category_id\": {{eventCategoryId}},\n  \"event_modality_id\": {{eventModalityId}},\n  \"location_id\": {{locationId}},\n  \"title\": \"Taller Postman {{$timestamp}}\",\n  \"description\": \"Evento creado para probar la API.\",\n  \"starts_at\": \"2026-12-01T10:00:00-05:00\",\n  \"capacity\": 30\n}" },
+            "url": "{{baseUrl}}/api/events"
+          }
+        },
+        {
+          "name": "Editar evento creado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Descripción actualizada desde Postman.\"\n}" },
+            "url": "{{baseUrl}}/api/events/{{eventId}}"
+          }
+        },
+        {
+          "name": "Cancelar evento creado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/events/{{eventId}}/cancel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Inscripciones",
+      "item": [
+        {
+          "name": "Buscar evento Hackathon TAWS",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/events?search=Hackathon%20TAWS&per_page=1"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const event = pm.response.json().data?.[0];",
+                  "pm.test('Se encontró el evento semilla Hackathon TAWS', () => {",
+                  "  pm.expect(event, 'Corre migrate:fresh --seed antes de esta prueba').to.exist;",
+                  "});",
+                  "if (event?.id) pm.collectionVariables.set('registrationEventId', String(event.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login estudiante nuevo (inscripciones)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{newStudentEmail}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Inscribirme al evento",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/events/{{registrationEventId}}/registrations"
+          }
+        },
+        {
+          "name": "Cancelar mi inscripción",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/events/{{registrationEventId}}/registrations"
+          }
+        },
+        {
+          "name": "Mis inscripciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/me/registrations?per_page=12"
+          }
+        },
+        {
+          "name": "Login organizador semilla",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" },
+              { "key": "X-XSRF-TOKEN", "value": "{{xsrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{organizerEmail}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Lista de inscritos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Origin", "value": "http://localhost:5173" },
+              { "key": "Referer", "value": "http://localhost:5173/" }
+            ],
+            "url": "{{baseUrl}}/api/events/{{registrationEventId}}/registrations"
+          }
+        }
+      ]
+    }
+  ]
+}
