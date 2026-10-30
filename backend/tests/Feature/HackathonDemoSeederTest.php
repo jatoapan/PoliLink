@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\EventStatus;
 use App\Models\Community;
 use App\Models\Event;
+use App\Models\Location;
 use Database\Seeders\HackathonDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,8 +24,8 @@ class HackathonDemoSeederTest extends TestCase
         $this->seed(HackathonDemoSeeder::class);
 
         $this->assertSame($counts, $this->tableCounts());
-        $this->assertSame(7, $counts['communities']);
-        $this->assertSame(21, $counts['events']);
+        $this->assertSame(14, $counts['communities']);
+        $this->assertSame(40, $counts['events']);
         $this->assertEquals($startsAt, Event::query()->orderBy('id')->pluck('starts_at', 'id'));
     }
 
@@ -57,7 +58,7 @@ class HackathonDemoSeederTest extends TestCase
         $response = $this->getJson('/api/events?per_page=50')->assertOk();
         $titles = collect($response->json('data'))->pluck('title');
 
-        $this->assertSame(19, $response->json('meta.total'));
+        $this->assertSame(38, $response->json('meta.total'));
         $this->assertNotContains('Taller de redes neuronales', $titles);
         $this->assertNotContains('Charla de bienvenida al Club de IA', $titles);
 
@@ -66,6 +67,35 @@ class HackathonDemoSeederTest extends TestCase
         $this->assertSame(
             EventStatus::Cancelled,
             Event::query()->where('title', 'Taller de redes neuronales')->sole()->status,
+        );
+    }
+
+    public function test_hackathon_demo_seeder_adds_espol_organizations_and_campus_venues(): void
+    {
+        $this->seed();
+        $this->seed(HackathonDemoSeeder::class);
+        $this->seed(HackathonDemoSeeder::class);
+
+        foreach ([
+            'Club Robota ESPOL' => 2,
+            'AIROS ESPOL' => 3,
+            'Rama Estudiantil IEEE ESPOL' => 3,
+            'Club de Desarrollo Sostenible ESPOL' => 4,
+            'Coro de ESPOL' => 2,
+            'Ballet Folclórico de ESPOL' => 2,
+            'i3lab ESPOL' => 3,
+        ] as $name => $eventCount) {
+            $community = Community::query()->where('name', $name)->sole();
+
+            $this->assertTrue($community->is_active);
+            $this->assertSame($eventCount, $community->events()->publiclyListed()->count(), $name);
+        }
+
+        $this->assertSame(1, Location::query()->where('name', 'Teatro ESPOL')->count());
+        $this->assertSame(1, Location::query()->where('name', 'Biblioteca Central')->count());
+        $this->assertSame(
+            'Teatro ESPOL',
+            Event::query()->where('title', 'Concierto del Coro de ESPOL')->sole()->location->name,
         );
     }
 

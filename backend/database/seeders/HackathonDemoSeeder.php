@@ -28,12 +28,26 @@ use Illuminate\Support\Str;
  * and registrations are only created when missing, communities that already
  * exist without the demo organizer are skipped, and only events inside demo
  * communities are refreshed so their dates stay in the future.
+ *
+ * Communities after "sports" are real ESPOL student organizations, described
+ * from public sources (ESPOL news, the ESPOL sustainability office and the
+ * clubs' own sites). Their events are illustrative: they are modeled on the
+ * activities each organization is known for, but titles, dates and
+ * capacities are invented for the demo.
  */
 class HackathonDemoSeeder extends Seeder
 {
     public const ORGANIZER_EMAIL = 'organizador.demo@espol.edu.ec';
 
     private const TIMEZONE = 'America/Guayaquil';
+
+    /**
+     * Campus venues used by the demo events that the reference seeder does not create.
+     */
+    private const DEMO_LOCATIONS = [
+        'Teatro ESPOL' => 'Sala de conciertos del campus Gustavo Galindo, con capacidad para 300 personas.',
+        'Biblioteca Central' => 'Biblioteca del campus Gustavo Galindo.',
+    ];
 
     public function run(): void
     {
@@ -62,6 +76,10 @@ class HackathonDemoSeeder extends Seeder
 
         $this->demoMembership($communities['ai'] ?? null, $students['ana'], $memberRoleId, $organizer);
         $this->demoMembership($communities['web'] ?? null, $students['luis'], $memberRoleId, $organizer);
+
+        foreach (self::DEMO_LOCATIONS as $name => $description) {
+            Location::query()->firstOrCreate(['name' => $name], ['description' => $description, 'is_active' => true]);
+        }
 
         $events = [];
         foreach ($this->events() as $key => $event) {
@@ -227,6 +245,34 @@ class HackathonDemoSeeder extends Seeder
             'sports' => [
                 'name' => 'Club Deportivo Politécnico',
                 'description' => 'Actividades deportivas y recreativas para la comunidad estudiantil: fútbol sala, yoga y torneos internos.',
+            ],
+            'robota' => [
+                'name' => 'Club Robota ESPOL',
+                'description' => 'Club de robótica creado en 2007 con estudiantes de distintas carreras. Diseña y construye robots de combate y de competencia, ha participado en más de 30 torneos dentro y fuera del país y organiza el torneo Robot Games Reto del Pacífico en ESPOL.',
+            ],
+            'airos' => [
+                'name' => 'AIROS ESPOL',
+                'description' => 'Artificial Intelligence and Robotics Society: más de 30 estudiantes de ingeniería que investigan robótica autónoma e inteligencia artificial aplicada. Compiten en la categoría F1TENTH de conducción autónoma y organizan talleres de robótica blanda.',
+            ],
+            'ieee' => [
+                'name' => 'Rama Estudiantil IEEE ESPOL',
+                'description' => 'Rama estudiantil del IEEE en ESPOL desde 2002. Reúne capítulos técnicos y de afinidad que promueven la investigación en tecnología con charlas, visitas técnicas, talleres y proyectos de robótica, automatización e inteligencia computacional.',
+            ],
+            'sustainability' => [
+                'name' => 'Club de Desarrollo Sostenible ESPOL',
+                'description' => 'Organización estudiantil dedicada a la sostenibilidad ambiental mediante voluntariado, gestión de residuos y alfabetización ambiental semanal sobre temas como la industria de la moda y la alimentación sostenible.',
+            ],
+            'choir' => [
+                'name' => 'Coro de ESPOL',
+                'description' => 'Grupo de música de ESPOL Cultural formado en 1995 por estudiantes que se reunían a tocar guitarra. Ensaya durante el semestre y se presenta en el Teatro ESPOL y en los Lunes Culturales.',
+            ],
+            'folk_ballet' => [
+                'name' => 'Ballet Folclórico de ESPOL',
+                'description' => 'Grupo de danza de ESPOL Cultural que difunde los bailes tradicionales del Ecuador en muestras dentro y fuera del campus.',
+            ],
+            'i3lab' => [
+                'name' => 'i3lab ESPOL',
+                'description' => 'Centro de Emprendimiento e Innovación de ESPOL. Impulsa la cultura emprendedora con estudiantes, docentes y empresas mediante talleres, la Semana Global del Emprendimiento y hackatones como SpaceHACK for Sustainability.',
             ],
         ];
     }
@@ -437,6 +483,196 @@ class HackathonDemoSeeder extends Seeder
                 'location' => 'Campus Gustavo Galindo',
                 'starts_at' => $this->nextWeekday(Carbon::WEDNESDAY, 1, 7),
                 'capacity' => 30,
+            ],
+            'robota_combat' => [
+                'community' => 'robota',
+                'title' => 'Taller de robots de combate: chasis, motores y armado',
+                'description' => 'Aprende a diseñar el chasis, elegir motores y armar un robot de combate siguiendo las reglas de seguridad de los torneos.',
+                'category' => 'workshop',
+                'modality' => 'in_person',
+                'location' => 'Campus Gustavo Galindo',
+                'starts_at' => $this->nextWeekday(Carbon::FRIDAY, 0, 15),
+                'capacity' => 25,
+            ],
+            'robota_reto' => [
+                'community' => 'robota',
+                'title' => 'Robot Games Reto del Pacífico: jornada abierta de práctica',
+                'description' => 'Prueba tu robot en la pista antes del torneo, recibe retroalimentación de los jueces y conoce las categorías de la competencia.',
+                'category' => 'hackathon',
+                'modality' => 'in_person',
+                'location' => 'Campus Gustavo Galindo',
+                'starts_at' => $this->nextWeekday(Carbon::SATURDAY, 2, 9),
+                'capacity' => 80,
+            ],
+            'airos_f1tenth' => [
+                'community' => 'airos',
+                'title' => 'Taller F1TENTH: conducción autónoma a escala',
+                'description' => 'Programa un auto autónomo a escala 1:10 con sensores LiDAR y algoritmos de planificación de trayectorias. Ideal para quienes ya programan en Python.',
+                'category' => 'workshop',
+                'modality' => 'in_person',
+                'location' => 'Auditorio FIEC',
+                'starts_at' => $this->nextWeekday(Carbon::FRIDAY, 1, 16),
+                'capacity' => 30,
+            ],
+            'airos_soft' => [
+                'community' => 'airos',
+                'title' => 'Charla: músculos artificiales y robótica blanda',
+                'description' => 'Revisamos cómo funcionan los músculos artificiales basados en polímeros y su desempeño en robots reales.',
+                'category' => 'talk',
+                'modality' => 'hybrid',
+                'location' => 'Auditorio FIEC',
+                'starts_at' => $this->nextWeekday(Carbon::THURSDAY, 0, 17),
+                'capacity' => 60,
+            ],
+            'airos_ros' => [
+                'community' => 'airos',
+                'title' => 'Introducción a ROS 2 para robots autónomos',
+                'description' => 'Sesión práctica en línea para instalar ROS 2, crear nodos y simular un robot móvil.',
+                'category' => 'workshop',
+                'modality' => 'virtual',
+                'location' => 'Google Meet',
+                'starts_at' => $this->nextWeekday(Carbon::TUESDAY, 1, 19),
+                'capacity' => 50,
+            ],
+            'ieee_genai' => [
+                'community' => 'ieee',
+                'title' => 'Charla: de los fundamentos de la IA a la IA generativa',
+                'description' => 'Un recorrido por los conceptos clave de la inteligencia artificial hasta los modelos generativos actuales y sus usos responsables.',
+                'category' => 'talk',
+                'modality' => 'in_person',
+                'location' => 'Auditorio FIEC',
+                'starts_at' => $this->nextWeekday(Carbon::WEDNESDAY, 0, 16),
+                'capacity' => 120,
+            ],
+            'ieee_arduino' => [
+                'community' => 'ieee',
+                'title' => 'Taller de Arduino y sensores para principiantes',
+                'description' => 'Conecta sensores, programa tu primera placa y construye un pequeño sistema de monitoreo.',
+                'category' => 'workshop',
+                'modality' => 'in_person',
+                'location' => 'Aula A-101',
+                'starts_at' => $this->nextWeekday(Carbon::MONDAY, 1, 15),
+                'capacity' => 25,
+            ],
+            'ieee_marathon' => [
+                'community' => 'ieee',
+                'title' => 'Maratón de programación en equipos',
+                'description' => 'Ocho horas para resolver problemas de algoritmos en equipos de tres. Abierto a estudiantes de todas las carreras.',
+                'category' => 'hackathon',
+                'modality' => 'in_person',
+                'location' => 'Campus Gustavo Galindo',
+                'starts_at' => $this->nextWeekday(Carbon::SATURDAY, 1, 8),
+                'capacity' => 90,
+            ],
+            'cds_market' => [
+                'community' => 'sustainability',
+                'title' => 'Ecomercadito politécnico',
+                'description' => 'Feria de emprendimientos sostenibles con intercambio de ropa, productos reutilizables y puntos de reciclaje.',
+                'category' => 'fair',
+                'modality' => 'in_person',
+                'location' => 'Campus Gustavo Galindo',
+                'starts_at' => $this->nextWeekday(Carbon::WEDNESDAY, 1, 10),
+                'capacity' => 300,
+            ],
+            'cds_fashion' => [
+                'community' => 'sustainability',
+                'title' => 'Alfabetización ambiental: el lado oscuro de la industria de la moda',
+                'description' => 'Conversatorio sobre el impacto ambiental de la moda rápida y alternativas de consumo responsable.',
+                'category' => 'talk',
+                'modality' => 'in_person',
+                'location' => 'Aula A-101',
+                'starts_at' => $this->nextWeekday(Carbon::THURSDAY, 1, 12),
+                'capacity' => 40,
+            ],
+            'cds_food' => [
+                'community' => 'sustainability',
+                'title' => 'Alimentación sostenible en el campus',
+                'description' => 'Charla en línea sobre cómo reducir el desperdicio de alimentos y elegir opciones sostenibles en la universidad.',
+                'category' => 'talk',
+                'modality' => 'virtual',
+                'location' => 'Google Meet',
+                'starts_at' => $this->nextWeekday(Carbon::MONDAY, 0, 19),
+                'capacity' => 100,
+            ],
+            'choir_concert' => [
+                'community' => 'choir',
+                'title' => 'Concierto del Coro de ESPOL',
+                'description' => 'Repertorio coral de música ecuatoriana y latinoamericana interpretado por estudiantes politécnicos.',
+                'category' => 'cultural',
+                'modality' => 'in_person',
+                'location' => 'Teatro ESPOL',
+                'starts_at' => $this->nextWeekday(Carbon::FRIDAY, 1, 19),
+                'capacity' => 300,
+            ],
+            'choir_auditions' => [
+                'community' => 'choir',
+                'title' => 'Audiciones abiertas para el Coro de ESPOL',
+                'description' => 'Si te gusta cantar, ven a conocer al coro y haz una audición breve. No necesitas experiencia previa.',
+                'category' => 'cultural',
+                'modality' => 'in_person',
+                'location' => 'Teatro ESPOL',
+                'starts_at' => $this->nextWeekday(Carbon::TUESDAY, 0, 16),
+                'capacity' => 40,
+            ],
+            'ballet_lunes' => [
+                'community' => 'folk_ballet',
+                'title' => 'Lunes Cultural: muestra de danza folclórica',
+                'description' => 'Presentación de bailes tradicionales del Ecuador dentro del ciclo de Lunes Culturales.',
+                'category' => 'cultural',
+                'modality' => 'in_person',
+                'location' => 'Teatro ESPOL',
+                'starts_at' => $this->nextWeekday(Carbon::MONDAY, 1, 18),
+                'capacity' => 300,
+            ],
+            'ballet_workshop' => [
+                'community' => 'folk_ballet',
+                'title' => 'Taller abierto de danza folclórica ecuatoriana',
+                'description' => 'Aprende los pasos básicos del sanjuanito y el pasillo con integrantes del ballet.',
+                'category' => 'cultural',
+                'modality' => 'in_person',
+                'location' => 'Campus Gustavo Galindo',
+                'starts_at' => $this->nextWeekday(Carbon::WEDNESDAY, 0, 17),
+                'capacity' => 30,
+            ],
+            'i3lab_spacehack' => [
+                'community' => 'i3lab',
+                'title' => 'SpaceHACK for Sustainability: hackatón de soluciones sostenibles',
+                'description' => 'Forma un equipo multidisciplinario y prototipa una solución tecnológica para un reto de sostenibilidad en 24 horas.',
+                'category' => 'hackathon',
+                'modality' => 'in_person',
+                'location' => 'Campus Gustavo Galindo',
+                'starts_at' => $this->nextWeekday(Carbon::SATURDAY, 3, 9),
+                'capacity' => 120,
+            ],
+            'i3lab_panel' => [
+                'community' => 'i3lab',
+                'title' => 'Semana Global del Emprendimiento: panel de startups',
+                'description' => 'Fundadores y mentores conversan sobre cómo pasar de una idea a una startup y qué errores evitar.',
+                'category' => 'talk',
+                'modality' => 'hybrid',
+                'location' => 'Auditorio FIEC',
+                'starts_at' => $this->nextWeekday(Carbon::THURSDAY, 2, 18),
+                'capacity' => 150,
+            ],
+            'i3lab_validation' => [
+                'community' => 'i3lab',
+                'title' => 'Taller: valida tu idea de negocio',
+                'description' => 'Herramientas prácticas para entrevistar a clientes, medir interés y decidir si tu idea merece convertirse en emprendimiento.',
+                'category' => 'workshop',
+                'modality' => 'in_person',
+                'location' => 'Aula A-101',
+                'starts_at' => $this->nextWeekday(Carbon::TUESDAY, 2, 15),
+                'capacity' => 35,
+            ],
+            'library_science' => [
+                'community' => 'sustainability',
+                'title' => 'Feria de ciencia y sostenibilidad en la biblioteca',
+                'description' => 'Proyectos estudiantiles sobre energía, agua y residuos presentados en la Biblioteca Central.',
+                'category' => 'fair',
+                'modality' => 'in_person',
+                'location' => 'Biblioteca Central',
+                'starts_at' => $this->nextWeekday(Carbon::FRIDAY, 2, 10),
+                'capacity' => 200,
             ],
         ];
     }
