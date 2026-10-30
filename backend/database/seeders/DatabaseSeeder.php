@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             EventReferenceSeeder::class,
             CommunityReferenceSeeder::class,
             PoliLinkDemoSeeder::class,
+            DemoImageSeeder::class,
         ]);
     }
 }
